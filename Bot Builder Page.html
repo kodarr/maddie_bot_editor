@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bot JSON Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px auto;
+      max-width: 800px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 6px;
+      margin-top: 5px;
+    }
+    textarea {
+      height: 80px;
+      resize: vertical;
+    }
+    .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+    .radio-group label {
+      font-weight: normal;
+      white-space: nowrap;
+    }
+    .counter {
+      font-size: 0.9em;
+      color: #555;
+      text-align: right;
+    }
+    #avatarImage {
+      max-width: 200px;
+      margin-top: 10px;
+      display: none;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bot Profile JSON Editor</h1>
+  <input type="file" id="fileInput" accept=".json"><br>
+
+  <form id="botForm">
+<table>
+<tr>
+<td>
+    <label>Profile Image:</label>
+    <input type="file" id="avatarInput" accept="image/*">
+    <div id="avatarPreview">
+      <img id="avatarImage" src="" alt="Preview">
+    </div>
+</td>
+<td>
+    <label>Visual Style:</label>
+    <div class="radio-group">
+      <label><input type="radio" name="style" value="1"> Anime</label>
+      <label><input type="radio" name="style" value="2"> Stylistic</label>
+      <label><input type="radio" name="style" value="3"> Realism</label>
+    </div>
+
+<!--
+    <label>Publication State:</label>
+    <div class="radio-group">
+      <label><input type="radio" name="state" value="0" checked> Public</label>
+      <label><input type="radio" name="state" value="1"> Unpublished</label>
+      <label><input type="radio" name="state" value="2"> Private</label>
+      <label><input type="radio" name="state" value="3"> Limited</label>
+      <label><input type="radio" name="state" value="4"> Banned</label>
+      <label><input type="radio" name="state" value="5"> Draft</label>
+    </div>
+-->
+
+    <label>Gender:</label>
+    <div class="radio-group">
+      <label><input type="radio" name="gender" value="3"> Non-Binary</label>
+      <label><input type="radio" name="gender" value="1"> Male</label>
+      <label><input type="radio" name="gender" value="2"> Female</label>
+      <label><input type="radio" name="gender" value="4"> Male (FtM)</label>
+      <label><input type="radio" name="gender" value="5"> Female (MtF)</label>
+    </div>
+
+    <label>SFW / NSFW:</label>
+    <div class="radio-group">
+      <label><input type="radio" name="nsfw" value="false" checked> SFW</label>
+      <label><input type="radio" name="nsfw" value="true"> NSFW</label>
+    </div>
+</td>
+</tr>
+<table>
+    <label>Bot Name:</label>
+    <input type="text" id="char_name">
+
+    <label>Short Description:</label>
+    <textarea id="personality"></textarea>
+    <div class="counter" id="personality_counter"></div>
+
+    <label>Personality:</label>
+    <textarea id="description"></textarea>
+    <div class="counter" id="description_counter"></div>
+
+    <label>Scenario:</label>
+    <textarea id="scenario"></textarea>
+    <div class="counter" id="scenario_counter"></div>
+
+    <label>Greeting:</label>
+    <textarea id="first_mes"></textarea>
+    <div class="counter" id="first_mes_counter"></div>
+
+    <label>Example Message:</label>
+    <textarea id="mes_example"></textarea>
+    <div class="counter" id="mes_example_counter"></div>
+
+    <label>Tags (one per line):</label>
+    <textarea id="tags"></textarea>
+  </form>
+
+  <div class="button-group">
+    <button onclick="downloadJson()">Download JSON</button>
+    <button onclick="clearForm()">Clear</button>
+  </div>
+
+  <script>
+    const textFields = ["personality", "description", "scenario", "first_mes", "mes_example"];
+    let avatarBase64 = "";
+
+    function updateCounter(textarea) {
+      const id = textarea.id;
+      const len = textarea.value.length;
+      const tokens = Math.ceil(len / 4);
+      const counter = document.getElementById(id + "_counter");
+      if (counter) counter.innerText = `${len} chars (~${tokens} tokens)`;
+    }
+
+    function saveToLocalStorage() {
+      const output = buildJson();
+      localStorage.setItem('botFormAutoSave', JSON.stringify(output));
+    }
+
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem('botFormAutoSave');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          populateForm(data);
+        } catch {}
+      }
+    }
+
+    function clearForm() {
+      document.getElementById('botForm').reset();
+      avatarBase64 = '';
+      document.getElementById('avatarImage').style.display = 'none';
+      textFields.forEach(id => {
+        const el = document.getElementById(id);
+        el.value = '';
+        updateCounter(el);
+      });
+      document.getElementById('tags').value = '';
+      localStorage.removeItem('botFormAutoSave');
+    }
+
+    function buildJson() {
+      return {
+        char_name: document.getElementById('char_name').value.trim(),
+        personality: document.getElementById('personality').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        scenario: document.getElementById('scenario').value.trim(),
+        first_mes: document.getElementById('first_mes').value.trim(),
+        mes_example: document.getElementById('mes_example').value.trim(),
+        tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
+        nsfw: document.querySelector('input[name="nsfw"]:checked').value === 'true',
+        style: parseInt(document.querySelector('input[name="style"]:checked').value),
+        state: parseInt(document.querySelector('input[name="state"]:checked').value),
+        gender: parseInt(document.querySelector('input[name="gender"]:checked').value),
+        avatar: avatarBase64
+      };
+    }
+
+    function populateForm(data) {
+      document.getElementById('char_name').value = data.char_name || '';
+      document.getElementById('personality').value = data.personality || '';
+      document.getElementById('description').value = data.description || '';
+      document.getElementById('scenario').value = data.scenario || '';
+      document.getElementById('first_mes').value = data.first_mes || '';
+      document.getElementById('mes_example').value = data.mes_example || '';
+      document.getElementById('tags').value = Array.isArray(data.tags) ? data.tags.join('\n') : '';
+
+      textFields.forEach(id => updateCounter(document.getElementById(id)));
+
+      const radioSets = ['nsfw', 'style', 'state', 'gender'];
+      radioSets.forEach(name => {
+        const val = String(data[name]);
+        const radio = document.querySelector(`input[name="${name}"][value="${val}"]`);
+        if (radio) radio.checked = true;
+      });
+
+      avatarBase64 = data.avatar || "";
+      const img = document.getElementById('avatarImage');
+      if (avatarBase64) {
+        img.src = avatarBase64;
+        img.style.display = 'block';
+      } else {
+        img.style.display = 'none';
+      }
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          populateForm(data);
+          saveToLocalStorage();
+        } catch (err) {
+          alert("Invalid JSON file.");
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('avatarInput').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        avatarBase64 = e.target.result;
+        const img = document.getElementById('avatarImage');
+        img.src = avatarBase64;
+        img.style.display = 'block';
+        saveToLocalStorage();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function downloadJson() {
+      const output = buildJson();
+      const blob = new Blob([JSON.stringify(output, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${output.char_name || "bot"}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Auto-save form changes
+    window.onload = () => {
+      textFields.forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', () => {
+          updateCounter(el);
+          saveToLocalStorage();
+        });
+        updateCounter(el);
+      });
+
+      document.querySelectorAll('input, textarea').forEach(el => {
+        el.addEventListener('change', saveToLocalStorage);
+      });
+
+      loadFromLocalStorage();
+    };
+  </script>
+</body>
+</html>
