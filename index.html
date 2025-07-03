@@ -147,30 +147,30 @@
     </table>
 
     <label>Bot Name:</label>
-    <input type="text" id="char_name">
+    <input type="text" id="char_name" placeholder="e.g. Clara the Curious">
 
     <label>Short Description:</label>
-    <textarea id="personality"></textarea>
+    <textarea id="personality" placeholder="Brief overview of the bot..."></textarea>
     <div class="counter" id="personality_counter"></div>
 
     <label>Personality:</label>
-    <textarea id="description"></textarea>
+    <textarea id="description" placeholder="Detailed character personality..."></textarea>
     <div class="counter" id="description_counter"></div>
 
     <label>Scenario:</label>
-    <textarea id="scenario"></textarea>
+    <textarea id="scenario" placeholder="Bot's default situation or background..."></textarea>
     <div class="counter" id="scenario_counter"></div>
 
     <label>Greeting:</label>
-    <textarea id="first_mes"></textarea>
+    <textarea id="first_mes" placeholder="First message the bot sends..."></textarea>
     <div class="counter" id="first_mes_counter"></div>
 
     <label>Example Message:</label>
-    <textarea id="mes_example"></textarea>
+    <textarea id="mes_example" placeholder="Sample message from the bot..."></textarea>
     <div class="counter" id="mes_example_counter"></div>
 
     <label>Tags (one per line):</label>
-    <textarea id="tags"></textarea>
+    <textarea id="tags" placeholder="Example:\nfunny\nfantasy\nguardian"></textarea>
   </form>
 
   <div class="button-group">
@@ -219,18 +219,23 @@
     }
 
     function buildJson() {
+      const val = id => document.getElementById(id)?.value.trim();
       return {
-        char_name: document.getElementById('char_name').value.trim(),
-        personality: document.getElementById('personality').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        scenario: document.getElementById('scenario').value.trim(),
-        first_mes: document.getElementById('first_mes').value.trim(),
-        mes_example: document.getElementById('mes_example').value.trim(),
-        tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
-        nsfw: document.querySelector('input[name="nsfw"]:checked').value === 'true',
-        style: parseInt(document.querySelector('input[name="style"]:checked').value),
+        char_name: val('char_name'),
+        name: val('char_name'),
+        creator_notes: val('personality'),
+        personality: val('personality'),
+        char_intro: val('personality'),
+        description: val('description'),
+        char_persona: val('description'),
+        scenario: val('scenario'),
+        first_mes: val('first_mes'),
+        mes_example: val('mes_example'),
+        tags: val('tags').split('\n').filter(Boolean),
+        nsfw: document.querySelector('input[name="nsfw"]:checked')?.value === 'true',
+        style: parseInt(document.querySelector('input[name="style"]:checked')?.value),
         state: 0,
-        gender: parseInt(document.querySelector('input[name="gender"]:checked').value),
+        gender: parseInt(document.querySelector('input[name="gender"]:checked')?.value),
         avatar: avatarBase64
       };
     }
@@ -246,8 +251,8 @@
 
       textFields.forEach(id => updateCounter(document.getElementById(id)));
 
-      const radioSets = ['nsfw', 'style', 'gender'];
-      radioSets.forEach(name => {
+      const sets = ['nsfw', 'style', 'gender'];
+      sets.forEach(name => {
         const val = String(data[name]);
         const radio = document.querySelector(`input[name="${name}"][value="${val}"]`);
         if (radio) radio.checked = true;
@@ -255,12 +260,8 @@
 
       avatarBase64 = data.avatar || "";
       const img = document.getElementById('avatarImage');
-      if (avatarBase64) {
-        img.src = avatarBase64;
-        img.style.display = 'block';
-      } else {
-        img.style.display = 'none';
-      }
+      img.src = avatarBase64 || '';
+      img.style.display = avatarBase64 ? 'block' : 'none';
     }
 
     document.getElementById('fileInput').addEventListener('change', function (event) {
@@ -273,7 +274,7 @@
           const data = JSON.parse(e.target.result);
           populateForm(data);
           saveToLocalStorage();
-        } catch (err) {
+        } catch {
           alert("Invalid JSON file.");
         }
       };
