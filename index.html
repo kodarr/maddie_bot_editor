@@ -6,25 +6,55 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      color:white;
-      background-color: #333333;
+      color: #e0e0e0;
+      background-color: #111827;
       margin: 20px auto;
       max-width: 800px;
     }
+
+    .top-button-wrapper {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .load-button {
+      display: inline-block;
+      background-color: #444;
+      color: #fff;
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      width: 100%;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .load-button:hover {
+      background-color: #666;
+    }
+
     label {
       display: block;
       margin-top: 15px;
       font-weight: bold;
     }
+
     input[type="text"], textarea {
       width: 100%;
       padding: 6px;
       margin-top: 5px;
+      background-color: #1f2937;
+      border: 1px solid #444;
+      color: #f9f9f9;
     }
+
     textarea {
       height: 80px;
       resize: vertical;
     }
+
     .radio-group {
       display: flex;
       flex-wrap: wrap;
@@ -32,24 +62,38 @@
       margin-top: 5px;
       margin-bottom: 15px;
     }
+
     .radio-group label {
       font-weight: normal;
       white-space: nowrap;
     }
+
     .counter {
       font-size: 0.9em;
-      color: #555;
+      color: #aaa;
       text-align: right;
     }
+
     #avatarImage {
       max-width: 200px;
       margin-top: 10px;
       display: none;
     }
+
     button {
       margin-top: 20px;
       padding: 10px 20px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
+
+    button:hover {
+      background-color: #666;
+    }
+
     .button-group {
       display: flex;
       gap: 10px;
@@ -59,55 +103,49 @@
 </head>
 <body>
   <h1>Bot Profile JSON Editor</h1>
-  <input type="file" id="fileInput" accept=".json"><br>
+
+  <div class="top-button-wrapper">
+    <label for="fileInput" class="load-button">Load Bot</label>
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+  </div>
 
   <form id="botForm">
-<table>
-<tr>
-<td>
-    <label>Profile Image:</label>
-    <input type="file" id="avatarInput" accept="image/*">
-    <div id="avatarPreview">
-      <img id="avatarImage" src="" alt="Preview">
-    </div>
-</td>
-<td>
-    <label>Visual Style:</label>
-    <div class="radio-group">
-      <label><input type="radio" name="style" value="1"> Anime</label>
-      <label><input type="radio" name="style" value="2"> Stylistic</label>
-      <label><input type="radio" name="style" value="3"> Realism</label>
-    </div>
+    <table>
+      <tr>
+        <td>
+          <label>Profile Image:</label>
+          <div id="avatarWrapper" style="width: 200px; height: 200px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;">
+            <span id="avatarPlaceholder" style="color: #888;">Click to upload avatar</span>
+            <img id="avatarImage" src="" alt="Preview" style="max-width: 100%; max-height: 100%; display: none; position: absolute; top: 0; left: 0; object-fit: cover; width: 100%; height: 100%;">
+          </div>
+          <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+        </td>
+        <td>
+          <label>Visual Style:</label>
+          <div class="radio-group">
+            <label><input type="radio" name="style" value="1"> Anime</label>
+            <label><input type="radio" name="style" value="2"> Stylistic</label>
+            <label><input type="radio" name="style" value="3"> Realism</label>
+          </div>
 
-<!--
-    <label>Publication State:</label>
-    <div class="radio-group">
-      <label><input type="radio" name="state" value="0" checked> Public</label>
-      <label><input type="radio" name="state" value="1"> Unpublished</label>
-      <label><input type="radio" name="state" value="2"> Private</label>
-      <label><input type="radio" name="state" value="3"> Limited</label>
-      <label><input type="radio" name="state" value="4"> Banned</label>
-      <label><input type="radio" name="state" value="5"> Draft</label>
-    </div>
--->
+          <label>Gender:</label>
+          <div class="radio-group">
+            <label><input type="radio" name="gender" value="3"> Non-Binary</label>
+            <label><input type="radio" name="gender" value="1"> Male</label>
+            <label><input type="radio" name="gender" value="2"> Female</label>
+            <label><input type="radio" name="gender" value="4"> Male (FtM)</label>
+            <label><input type="radio" name="gender" value="5"> Female (MtF)</label>
+          </div>
 
-    <label>Gender:</label>
-    <div class="radio-group">
-      <label><input type="radio" name="gender" value="3"> Non-Binary</label>
-      <label><input type="radio" name="gender" value="1"> Male</label>
-      <label><input type="radio" name="gender" value="2"> Female</label>
-      <label><input type="radio" name="gender" value="4"> Male (FtM)</label>
-      <label><input type="radio" name="gender" value="5"> Female (MtF)</label>
-    </div>
+          <label>SFW / NSFW:</label>
+          <div class="radio-group">
+            <label><input type="radio" name="nsfw" value="false" checked> SFW</label>
+            <label><input type="radio" name="nsfw" value="true"> NSFW</label>
+          </div>
+        </td>
+      </tr>
+    </table>
 
-    <label>SFW / NSFW:</label>
-    <div class="radio-group">
-      <label><input type="radio" name="nsfw" value="false" checked> SFW</label>
-      <label><input type="radio" name="nsfw" value="true"> NSFW</label>
-    </div>
-</td>
-</tr>
-<table>
     <label>Bot Name:</label>
     <input type="text" id="char_name">
 
@@ -191,7 +229,7 @@
         tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
         nsfw: document.querySelector('input[name="nsfw"]:checked').value === 'true',
         style: parseInt(document.querySelector('input[name="style"]:checked').value),
-        state: parseInt(document.querySelector('input[name="state"]:checked').value),
+        state: 0,
         gender: parseInt(document.querySelector('input[name="gender"]:checked').value),
         avatar: avatarBase64
       };
@@ -208,7 +246,7 @@
 
       textFields.forEach(id => updateCounter(document.getElementById(id)));
 
-      const radioSets = ['nsfw', 'style', 'state', 'gender'];
+      const radioSets = ['nsfw', 'style', 'gender'];
       radioSets.forEach(name => {
         const val = String(data[name]);
         const radio = document.querySelector(`input[name="${name}"][value="${val}"]`);
@@ -242,6 +280,10 @@
       reader.readAsText(file);
     });
 
+    document.getElementById('avatarWrapper').addEventListener('click', () => {
+      document.getElementById('avatarInput').click();
+    });
+
     document.getElementById('avatarInput').addEventListener('change', function (event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -268,7 +310,6 @@
       URL.revokeObjectURL(url);
     }
 
-    // Auto-save form changes
     window.onload = () => {
       textFields.forEach(id => {
         const el = document.getElementById(id);
