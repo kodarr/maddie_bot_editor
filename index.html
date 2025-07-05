@@ -167,7 +167,7 @@
     <div class="counter" id="creator_notes_counter"></div>
 
     <label>Personality:</label>
-    <textarea id="char_persona"></textarea>
+    <textarea id="description"></textarea>
     <div class="counter" id="description_counter"></div>
 
     <label>Scenario:</label>
@@ -193,7 +193,7 @@
   </div>
 
   <script>
-    const textFields = ["creator_notes", "char_persona", "scenario", "first_mes", "mes_example"];
+    const textFields = ["creator_notes", "description", "scenario", "first_mes", "mes_example"];
     let avatarBase64 = "";
 
     function updateCounter(textarea) {
@@ -208,10 +208,9 @@
       return {
         char_name: document.getElementById('char_name').value.trim(),
         name: document.getElementById('char_name').value.trim(),
-        creator_notes: document.getElementById('creator_notes').value.trim(),
         personality: document.getElementById('creator_notes').value.trim(),
         char_intro: document.getElementById('creator_notes').value.trim(),
-        description: document.getElementById('char_persona').value.trim(),
+        description: document.getElementById('description').value.trim(),
         char_persona: document.getElementById('char_persona').value.trim(),
         scenario: document.getElementById('scenario').value.trim(),
         first_mes: document.getElementById('first_mes').value.trim(),
@@ -224,6 +223,24 @@
         avatar: avatarBase64
       };
     }
+    function buildLiLJson() {
+      return {
+        char_name: document.getElementById('char_name').value.trim(),
+        name: document.getElementById('char_name').value.trim(),
+        creator_notes: document.getElementById('creator_notes').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        scenario: document.getElementById('scenario').value.trim(),
+        first_mes: document.getElementById('first_mes').value.trim(),
+        mes_example: document.getElementById('mes_example').value.trim(),
+        tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
+        nsfw: document.querySelector('input[name="nsfw"]:checked').value === 'true',
+        style: parseInt(document.querySelector('input[name="style"]:checked').value),
+        state: 0,
+        gender: parseInt(document.querySelector('input[name="gender"]:checked').value),
+        avatar: avatarBase64
+      };
+    }
+
 
     function downloadJson() {
       const output = buildJson();
@@ -237,7 +254,7 @@
     }
 
     function downloadLilJson() {
-      const output = buildJson();
+      const output = buildLiLJson();
       const blob = new Blob([JSON.stringify(output, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -263,7 +280,7 @@
     function populateForm(data) {
       document.getElementById('char_name').value = data.char_name || '';
       document.getElementById('creator_notes').value = data.creator_notes || '';
-      document.getElementById('char_persona').value = data.description || '';
+      document.getElementById('description').value = data.description || '';
       document.getElementById('scenario').value = data.scenario || '';
       document.getElementById('first_mes').value = data.first_mes || '';
       document.getElementById('mes_example').value = data.mes_example || '';
