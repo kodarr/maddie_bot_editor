@@ -48,7 +48,7 @@
       background-color: #1f2937;
       border: 1px solid #444;
       color: #f9f9f9;
-      font-size: 20px;
+      font-size: 17px;
     }
 
     textarea {
@@ -73,12 +73,6 @@
       font-size: 0.9em;
       color: #aaa;
       text-align: right;
-    }
-
-    #avatarImage {
-      max-width: 200px;
-      margin-top: 10px;
-      display: none;
     }
 
     button {
@@ -152,9 +146,9 @@
   </form>
 
   <div class="button-group">
-    <button class="lil-button" onclick="downloadLilJson()">Export LiL JSON</button>
-    <button onclick="downloadJson()">Download JSON</button>
-    <button onclick="clearForm()">Clear</button>
+    <button type="button" class="lil-button" onclick="downloadLilJson()">Export LiL JSON</button>
+    <button type="button" onclick="downloadJson()">Download JSON</button>
+    <button type="button" onclick="clearForm()">Clear</button>
   </div>
 
   <script>
@@ -202,10 +196,11 @@
         first_mes: document.getElementById('first_mes').value.trim(),
         mes_example: document.getElementById('mes_example').value.trim(),
         tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
-        nsfw: document.querySelector('input[name="nsfw"]:checked').value === 'true',
-        style: parseInt(document.querySelector('input[name="style"]:checked').value),
-        gender: parseInt(document.querySelector('input[name="gender"]:checked').value),
-        avatar: avatarBase64
+        nsfw: false,
+        style: 1,
+        gender: 3,
+        avatar: avatarBase64,
+        state: 0
       };
     }
 
@@ -270,7 +265,7 @@
       try {
         const data = JSON.parse(json);
         populateForm(data);
-      } catch { }
+      } catch {}
     }
 
     document.getElementById('fileInput').addEventListener('change', function (event) {
