@@ -123,48 +123,12 @@
   </div>
 
   <form id="botForm">
-    <table>
-      <tr>
-        <td>
-          <label>Profile Image:</label>
-          <div id="avatarWrapper" style="width: 200px; height: 200px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;">
-            <span id="avatarPlaceholder" style="color: #888;">Click to upload avatar</span>
-            <img id="avatarImage" src="" alt="Preview" style="max-width: 100%; max-height: 100%; display: none; position: absolute; top: 0; left: 0; object-fit: cover; width: 100%; height: 100%;">
-          </div>
-          <input type="file" id="avatarInput" accept="image/*" style="display: none;">
-        </td>
-        <td>
-          <label>Visual Style:</label>
-          <div class="radio-group">
-            <label><input type="radio" name="style" value="1"> Anime</label>
-            <label><input type="radio" name="style" value="2"> Stylistic</label>
-            <label><input type="radio" name="style" value="3"> Realism</label>
-          </div>
-
-          <label>Gender:</label>
-          <div class="radio-group">
-            <label><input type="radio" name="gender" value="3"> Non-Binary</label>
-            <label><input type="radio" name="gender" value="1"> Male</label>
-            <label><input type="radio" name="gender" value="2"> Female</label>
-            <label><input type="radio" name="gender" value="4"> Male (FtM)</label>
-            <label><input type="radio" name="gender" value="5"> Female (MtF)</label>
-          </div>
-
-          <label>SFW / NSFW:</label>
-          <div class="radio-group">
-            <label><input type="radio" name="nsfw" value="false" checked> SFW</label>
-            <label><input type="radio" name="nsfw" value="true"> NSFW</label>
-          </div>
-        </td>
-      </tr>
-    </table>
-
     <label>Bot Name:</label>
     <input type="text" id="char_name">
 
     <label>Short Description:</label>
     <textarea id="creator_notes"></textarea>
-    <div class="counter" id="creator_notes_counter"></div>
+    <div class="counter" id="combined_counter"></div>
 
     <label>Personality:</label>
     <textarea id="description"></textarea>
@@ -193,7 +157,7 @@
   </div>
 
   <script>
-    const textFields = ["creator_notes", "description", "scenario", "first_mes", "mes_example"];
+    const textFields = ["char_name", "creator_notes", "description", "scenario", "first_mes", "mes_example", "tags"];
     let avatarBase64 = "";
 
     function updateCounter(textarea) {
@@ -202,6 +166,14 @@
       const tokens = Math.ceil(len / 4);
       const counter = document.getElementById(id + "_counter");
       if (counter) counter.innerText = `${len} chars (~${tokens} tokens)`;
+      updateCombinedCounter();
+    }
+
+    function updateCombinedCounter() {
+      const desc = document.getElementById("description").value || "";
+      const scen = document.getElementById("scenario").value || "";
+      const totalTokens = Math.ceil((desc.length + scen.length) / 4);
+      document.getElementById("combined_counter").innerText = `~Tokens of (Personality + Scenario): ${totalTokens}`;
     }
 
     function buildJson() {
@@ -211,18 +183,14 @@
         personality: document.getElementById('creator_notes').value.trim(),
         char_intro: document.getElementById('creator_notes').value.trim(),
         description: document.getElementById('description').value.trim(),
-        char_persona: document.getElementById('char_persona').value.trim(),
         scenario: document.getElementById('scenario').value.trim(),
         first_mes: document.getElementById('first_mes').value.trim(),
         mes_example: document.getElementById('mes_example').value.trim(),
         tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
-        nsfw: document.querySelector('input[name="nsfw"]:checked').value === 'true',
-        style: parseInt(document.querySelector('input[name="style"]:checked').value),
-        state: 0,
-        gender: parseInt(document.querySelector('input[name="gender"]:checked').value),
         avatar: avatarBase64
       };
     }
+
     function buildLiLJson() {
       return {
         char_name: document.getElementById('char_name').value.trim(),
@@ -235,12 +203,10 @@
         tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
         nsfw: document.querySelector('input[name="nsfw"]:checked').value === 'true',
         style: parseInt(document.querySelector('input[name="style"]:checked').value),
-        state: 0,
         gender: parseInt(document.querySelector('input[name="gender"]:checked').value),
         avatar: avatarBase64
       };
     }
-
 
     function downloadJson() {
       const output = buildJson();
@@ -267,7 +233,6 @@
     function clearForm() {
       document.getElementById('botForm').reset();
       avatarBase64 = '';
-      document.getElementById('avatarImage').style.display = 'none';
       textFields.forEach(id => {
         const el = document.getElementById(id);
         el.value = '';
@@ -279,40 +244,43 @@
 
     function populateForm(data) {
       document.getElementById('char_name').value = data.char_name || '';
-      document.getElementById('creator_notes').value = data.creator_notes || '';
+      document.getElementById('creator_notes').value = data.creator_notes || data.personality || '';
       document.getElementById('description').value = data.description || '';
       document.getElementById('scenario').value = data.scenario || '';
       document.getElementById('first_mes').value = data.first_mes || '';
       document.getElementById('mes_example').value = data.mes_example || '';
       document.getElementById('tags').value = Array.isArray(data.tags) ? data.tags.join('\n') : '';
+      avatarBase64 = data.avatar || '';
+      updateAllCounters();
+    }
 
+    function updateAllCounters() {
       textFields.forEach(id => updateCounter(document.getElementById(id)));
+    }
 
-      ['nsfw', 'style', 'gender'].forEach(name => {
-        const val = String(data[name]);
-        const radio = document.querySelector(`input[name="${name}"][value="${val}"]`);
-        if (radio) radio.checked = true;
-      });
+    function saveToLocalStorage() {
+      const json = buildJson();
+      localStorage.setItem('botFormAutoSave', JSON.stringify(json));
+    }
 
-      avatarBase64 = data.avatar || "";
-      const img = document.getElementById('avatarImage');
-      if (avatarBase64) {
-        img.src = avatarBase64;
-        img.style.display = 'block';
-      } else {
-        img.style.display = 'none';
-      }
+    function loadFromLocalStorage() {
+      const json = localStorage.getItem('botFormAutoSave');
+      if (!json) return;
+      try {
+        const data = JSON.parse(json);
+        populateForm(data);
+      } catch { }
     }
 
     document.getElementById('fileInput').addEventListener('change', function (event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function (e) {
         try {
           const data = JSON.parse(e.target.result);
           populateForm(data);
+          saveToLocalStorage();
         } catch {
           alert("Invalid JSON file.");
         }
@@ -320,32 +288,19 @@
       reader.readAsText(file);
     });
 
-    document.getElementById('avatarWrapper').addEventListener('click', () => {
-      document.getElementById('avatarInput').click();
-    });
-
-    document.getElementById('avatarInput').addEventListener('change', function (event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        avatarBase64 = e.target.result;
-        const img = document.getElementById('avatarImage');
-        img.src = avatarBase64;
-        img.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    });
-
     window.onload = () => {
       textFields.forEach(id => {
         const el = document.getElementById(id);
         el.addEventListener('input', () => {
           updateCounter(el);
+          saveToLocalStorage();
         });
         updateCounter(el);
       });
+      document.querySelectorAll('input, textarea').forEach(el => {
+        el.addEventListener('change', saveToLocalStorage);
+      });
+      loadFromLocalStorage();
     };
   </script>
 </body>
