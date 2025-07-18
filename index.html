@@ -56,19 +56,6 @@
       resize: vertical;
     }
 
-    .radio-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 5px;
-      margin-bottom: 15px;
-    }
-
-    .radio-group label {
-      font-weight: normal;
-      white-space: nowrap;
-    }
-
     .counter {
       font-size: 0.9em;
       color: #aaa;
@@ -107,6 +94,55 @@
     .lil-button:hover {
       background-color: #f17591;
     }
+
+    .tab-container {
+      margin-top: 20px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .tab-button {
+      background-color: #374151;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .tab-button.active {
+      background-color: #e55e7a;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .path-block {
+      display: none;
+    }
+
+    .path-block.active {
+      display: block;
+    }
+ 
+    .location-block {
+      display: none;
+    }
+
+    .location-block.active {
+      display: block;
+    }
+
   </style>
 </head>
 <body>
@@ -118,31 +154,55 @@
   </div>
 
   <form id="botForm">
-    <label>Bot Name:</label>
-    <input type="text" id="char_name">
+    <div class="tab-container">
+      <div class="tab-buttons">
+        <button type="button" class="tab-button active" data-tab="tab1">Core Bot</button>
+        <button type="button" class="tab-button" data-tab="tab2">Paths</button>
+        <button type="button" class="tab-button" data-tab="tab3">Locations</button>
+      </div>
 
-    <label>Short Description:</label>
-    <textarea id="creator_notes"></textarea>
-    <div class="counter" id="combined_counter"></div>
+      <div class="tab-content active" id="tab1">
+        <label>Bot Name:</label>
+        <input type="text" id="char_name">
 
-    <label>Personality:</label>
-    <textarea id="description"></textarea>
-    <div class="counter" id="description_counter"></div>
+        <label>Short Description:</label>
+        <textarea id="creator_notes"></textarea>
+        <div class="counter" id="combined_counter"></div>
 
-    <label>Scenario:</label>
-    <textarea id="scenario"></textarea>
-    <div class="counter" id="scenario_counter"></div>
+        <label>Personality:</label>
+        <textarea id="description"></textarea>
+        <div class="counter" id="description_counter"></div>
 
-    <label>Greeting:</label>
-    <textarea id="first_mes"></textarea>
-    <div class="counter" id="first_mes_counter"></div>
+        <label>Scenario:</label>
+        <textarea id="scenario"></textarea>
+        <div class="counter" id="scenario_counter"></div>
 
-    <label>Example Message:</label>
-    <textarea id="mes_example"></textarea>
-    <div class="counter" id="mes_example_counter"></div>
+        <label>Greeting:</label>
+        <textarea id="first_mes"></textarea>
+        <div class="counter" id="first_mes_counter"></div>
 
-    <label>Tags (one per line):</label>
-    <textarea id="tags"></textarea>
+        <label>Example Message:</label>
+        <textarea id="mes_example"></textarea>
+        <div class="counter" id="mes_example_counter"></div>
+
+        <label>Tags (one per line):</label>
+        <textarea id="tags"></textarea>
+      </div>
+
+      <div class="tab-content" id="tab2">
+        <label for="pathSelect">Select Path:</label>
+        <select id="pathSelect"></select>
+
+        <div id="pathFieldsContainer"></div>
+      </div>
+
+      <div class="tab-content" id="tab3">
+        <label for="locationSelect">Select Location:</label>
+        <select id="locationSelect"></select>
+
+        <div id="locationFieldsContainer"></div>
+      </div>
+    </div>
   </form>
 
   <div class="button-group">
@@ -152,7 +212,10 @@
   </div>
 
   <script>
-    const textFields = ["char_name", "creator_notes", "description", "scenario", "first_mes", "mes_example", "tags"];
+    const textFields = [
+      "char_name", "creator_notes", "description", "scenario", "first_mes", "mes_example", "tags",
+      "path1_description", "path1_scenario", "path1_first_mes"
+    ];
     let avatarBase64 = "";
 
     function updateCounter(textarea) {
@@ -196,6 +259,76 @@
         first_mes: document.getElementById('first_mes').value.trim(),
         mes_example: document.getElementById('mes_example').value.trim(),
         tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
+        path1_char_name: document.getElementById('path1_name').value.trim(),
+        path1_creator_notes: document.getElementById('path1_creator_notes').value.trim(),
+        path1_description: document.getElementById('path1_description').value.trim(),
+        path1_scenario: document.getElementById('path1_scenario').value.trim(),
+        path1_first_mes: document.getElementById('path1_first_mes').value.trim(),
+        path2_char_name: document.getElementById('path2_name').value.trim(),
+        path2_creator_notes: document.getElementById('path2_creator_notes').value.trim(),
+        path2_description: document.getElementById('path2_description').value.trim(),
+        path2_scenario: document.getElementById('path2_scenario').value.trim(),
+        path2_first_mes: document.getElementById('path2_first_mes').value.trim(),
+        path3_char_name: document.getElementById('path3_name').value.trim(),
+        path3_creator_notes: document.getElementById('path3_creator_notes').value.trim(),
+        path3_description: document.getElementById('path3_description').value.trim(),
+        path3_scenario: document.getElementById('path3_scenario').value.trim(),
+        path3_first_mes: document.getElementById('path3_first_mes').value.trim(),
+        path4_char_name: document.getElementById('path4_name').value.trim(),
+        path4_creator_notes: document.getElementById('path4_creator_notes').value.trim(),
+        path4_description: document.getElementById('path4_description').value.trim(),
+        path4_scenario: document.getElementById('path4_scenario').value.trim(),
+        path4_first_mes: document.getElementById('path4_first_mes').value.trim(),
+        path5_char_name: document.getElementById('path5_name').value.trim(),
+        path5_creator_notes: document.getElementById('path5_creator_notes').value.trim(),
+        path5_description: document.getElementById('path5_description').value.trim(),
+        path5_scenario: document.getElementById('path5_scenario').value.trim(),
+        path5_first_mes: document.getElementById('path5_first_mes').value.trim(),
+        path6_char_name: document.getElementById('path6_name').value.trim(),
+        path6_creator_notes: document.getElementById('path6_creator_notes').value.trim(),
+        path6_description: document.getElementById('path6_description').value.trim(),
+        path6_scenario: document.getElementById('path6_scenario').value.trim(),
+        path6_first_mes: document.getElementById('path6_first_mes').value.trim(),
+        path7_char_name: document.getElementById('path7_name').value.trim(),
+        path7_creator_notes: document.getElementById('path7_creator_notes').value.trim(),
+        path7_description: document.getElementById('path7_description').value.trim(),
+        path7_scenario: document.getElementById('path7_scenario').value.trim(),
+        path7_first_mes: document.getElementById('path7_first_mes').value.trim(),
+        path8_char_name: document.getElementById('path8_name').value.trim(),
+        path8_creator_notes: document.getElementById('path8_creator_notes').value.trim(),
+        path8_description: document.getElementById('path8_description').value.trim(),
+        path8_scenario: document.getElementById('path8_scenario').value.trim(),
+        path8_first_mes: document.getElementById('path8_first_mes').value.trim(),
+        path9_char_name: document.getElementById('path9_name').value.trim(),
+        path9_creator_notes: document.getElementById('path9_creator_notes').value.trim(),
+        path9_description: document.getElementById('path9_description').value.trim(),
+        path9_scenario: document.getElementById('path9_scenario').value.trim(),
+        path9_first_mes: document.getElementById('path9_first_mes').value.trim(),
+        path10_char_name: document.getElementById('path10_name').value.trim(),
+        path10_creator_notes: document.getElementById('path10_creator_notes').value.trim(),
+        path10_description: document.getElementById('path10_description').value.trim(),
+        path10_scenario: document.getElementById('path10_scenario').value.trim(),
+        path10_first_mes: document.getElementById('path10_first_mes').value.trim(),
+        location1_name: document.getElementById('location1_name').value.trim(),
+        location1_description: document.getElementById('location1_description').value.trim(),
+        location2_name: document.getElementById('location2_name').value.trim(),
+        location2_description: document.getElementById('location2_description').value.trim(),
+        location3_name: document.getElementById('location3_name').value.trim(),
+        location3_description: document.getElementById('location3_description').value.trim(),
+        location4_name: document.getElementById('location4_name').value.trim(),
+        location4_description: document.getElementById('location4_description').value.trim(),
+        location5_name: document.getElementById('location5_name').value.trim(),
+        location5_description: document.getElementById('location5_description').value.trim(),
+        location6_name: document.getElementById('location6_name').value.trim(),
+        location6_description: document.getElementById('location6_description').value.trim(),
+        location7_name: document.getElementById('location7_name').value.trim(),
+        location7_description: document.getElementById('location7_description').value.trim(),
+        location8_name: document.getElementById('location8_name').value.trim(),
+        location8_description: document.getElementById('location8_description').value.trim(),
+        location9_name: document.getElementById('location9_name').value.trim(),
+        location9_description: document.getElementById('location9_description').value.trim(),
+        location10_name: document.getElementById('location10_name').value.trim(),
+        location10_description: document.getElementById('location10_description').value.trim(),
         nsfw: false,
         style: 1,
         gender: 3,
@@ -246,6 +379,76 @@
       document.getElementById('first_mes').value = data.first_mes || '';
       document.getElementById('mes_example').value = data.mes_example || '';
       document.getElementById('tags').value = Array.isArray(data.tags) ? data.tags.join('\n') : '';
+      document.getElementById('path1_name').value = data.path1_char_name || '';
+      document.getElementById('path1_creator_notes').value = data.path1_creator_notes || '';
+      document.getElementById('path1_description').value = data.path1_description || '';
+      document.getElementById('path1_scenario').value = data.path1_scenario || '';
+      document.getElementById('path1_first_mes').value = data.path1_first_mes || '';
+      document.getElementById('path2_name').value = data.path2_char_name || '';
+      document.getElementById('path2_creator_notes').value = data.path2_creator_notes || '';
+      document.getElementById('path2_description').value = data.path2_description || '';
+      document.getElementById('path2_scenario').value = data.path2_scenario || '';
+      document.getElementById('path2_first_mes').value = data.path2_first_mes || '';
+      document.getElementById('path3_name').value = data.path3_char_name || '';
+      document.getElementById('path3_creator_notes').value = data.path3_creator_notes || '';
+      document.getElementById('path3_description').value = data.path3_description || '';
+      document.getElementById('path3_scenario').value = data.path3_scenario || '';
+      document.getElementById('path3_first_mes').value = data.path3_first_mes || '';
+      document.getElementById('path4_name').value = data.path4_char_name || '';
+      document.getElementById('path4_creator_notes').value = data.path4_creator_notes || '';
+      document.getElementById('path4_description').value = data.path4_description || '';
+      document.getElementById('path4_scenario').value = data.path4_scenario || '';
+      document.getElementById('path4_first_mes').value = data.path4_first_mes || '';
+      document.getElementById('path5_name').value = data.path5_char_name || '';
+      document.getElementById('path5_creator_notes').value = data.path5_creator_notes || '';
+      document.getElementById('path5_description').value = data.path5_description || '';
+      document.getElementById('path5_scenario').value = data.path5_scenario || '';
+      document.getElementById('path5_first_mes').value = data.path5_first_mes || '';
+      document.getElementById('path6_name').value = data.path6_char_name || '';
+      document.getElementById('path6_creator_notes').value = data.path6_creator_notes || '';
+      document.getElementById('path6_description').value = data.path6_description || '';
+      document.getElementById('path6_scenario').value = data.path6_scenario || '';
+      document.getElementById('path6_first_mes').value = data.path6_first_mes || '';
+      document.getElementById('path7_name').value = data.path7_char_name || '';
+      document.getElementById('path7_creator_notes').value = data.path7_creator_notes || '';
+      document.getElementById('path7_description').value = data.path7_description || '';
+      document.getElementById('path7_scenario').value = data.path7_scenario || '';
+      document.getElementById('path7_first_mes').value = data.path7_first_mes || '';
+      document.getElementById('path8_name').value = data.path8_char_name || '';
+      document.getElementById('path8_creator_notes').value = data.path8_creator_notes || '';
+      document.getElementById('path8_description').value = data.path8_description || '';
+      document.getElementById('path8_scenario').value = data.path8_scenario || '';
+      document.getElementById('path8_first_mes').value = data.path8_first_mes || '';
+      document.getElementById('path9_name').value = data.path9_char_name || '';
+      document.getElementById('path9_creator_notes').value = data.path9_creator_notes || '';
+      document.getElementById('path9_description').value = data.path9_description || '';
+      document.getElementById('path9_scenario').value = data.path9_scenario || '';
+      document.getElementById('path9_first_mes').value = data.path9_first_mes || '';
+      document.getElementById('path10_name').value = data.path10_char_name || '';
+      document.getElementById('path10_creator_notes').value = data.path10_creator_notes || '';
+      document.getElementById('path10_description').value = data.path10_description || '';
+      document.getElementById('path10_scenario').value = data.path10_scenario || '';
+      document.getElementById('path10_first_mes').value = data.path10_first_mes || '';
+      document.getElementById('location1_name').value = data.location1_name || '';
+      document.getElementById('location1_description').value = data.location1_description || '';
+      document.getElementById('location2_name').value = data.location2_name || '';
+      document.getElementById('location2_description').value = data.location2_description || '';
+      document.getElementById('location3_name').value = data.location3_name || '';
+      document.getElementById('location3_description').value = data.location3_description || '';
+      document.getElementById('location4_name').value = data.location4_name || '';
+      document.getElementById('location4_description').value = data.location4_description || '';
+      document.getElementById('location5_name').value = data.location5_name || '';
+      document.getElementById('location5_description').value = data.location5_description || '';
+      document.getElementById('location6_name').value = data.location6_name || '';
+      document.getElementById('location6_description').value = data.location6_description || '';
+      document.getElementById('location7_name').value = data.location7_name || '';
+      document.getElementById('location7_description').value = data.location7_description || '';
+      document.getElementById('location8_name').value = data.location8_name || '';
+      document.getElementById('location8_description').value = data.location8_description || '';
+      document.getElementById('location9_name').value = data.location9_name || '';
+      document.getElementById('location9_description').value = data.location9_description || '';
+      document.getElementById('location10_name').value = data.location10_name || '';
+      document.getElementById('location10_description').value = data.location10_description || '';
       avatarBase64 = data.avatar || '';
       updateAllCounters();
     }
@@ -298,6 +501,92 @@
       });
       loadFromLocalStorage();
     };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const pathSelect = document.getElementById('pathSelect');
+      const container = document.getElementById('pathFieldsContainer');
+
+      for (let i = 1; i <= 10; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Path ${i}`;
+        pathSelect.appendChild(opt);
+
+        const div = document.createElement('div');
+        div.className = 'path-block';
+        div.id = `path-block-${i}`;
+        div.innerHTML = `
+          <label>Path Name:</label>
+          <input type="text" id="path${i}_name">
+
+          <label>Path Short Description:</label>
+          <textarea id="path${i}_creator_notes"></textarea>
+
+          <label>Path Mini Personality:</label>
+          <textarea id="path${i}_description"></textarea>
+          <div class="counter" id="path${i}_description_counter"></div>
+
+          <label>Path Scenario:</label>
+          <textarea id="path${i}_scenario"></textarea>
+          <div class="counter" id="path${i}_scenario_counter"></div>
+
+          <label>Path Greeting:</label>
+          <textarea id="path${i}_first_mes"></textarea>
+          <div class="counter" id="path${i}_first_mes_counter"></div>
+        `;
+        container.appendChild(div);
+      }
+
+      const locationSelect = document.getElementById('locationSelect');
+      const locationContainer = document.getElementById('locationFieldsContainer');
+
+      for (let i = 1; i <= 10; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Location ${i}`;
+        locationSelect.appendChild(opt);
+
+        const div = document.createElement('div');
+        div.className = 'location-block';
+        div.id = `location-block-${i}`;
+        div.innerHTML = `
+            <label>Location Name:</label>
+            <input type="text" id="location${i}_name">
+
+            <label>Location Description:</label>
+            <textarea id="location${i}_description"></textarea>
+            <div class="counter" id="location${i}_counter"></div>
+        `;
+        locationContainer.appendChild(div);
+      }
+
+      pathSelect.addEventListener('change', function () {
+        for (let i = 1; i <= 10; i++) {
+          const block = document.getElementById(`path-block-${i}`);
+          block.classList.remove('active');
+          if (parseInt(this.value) === i) block.classList.add('active');
+        }
+      });
+
+      locationSelect.addEventListener('change', function () {
+        for (let i = 1; i <= 10; i++) {
+            const block = document.getElementById(`location-block-${i}`);
+            block.classList.remove('active');
+            if (parseInt(this.value) === i) block.classList.add('active');
+        }
+      });
+
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const tabId = button.getAttribute('data-tab');
+          document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+
+          document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+    });
   </script>
 </body>
 </html>
