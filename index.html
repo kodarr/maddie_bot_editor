@@ -30,10 +30,7 @@
       text-align: center;
       transition: background-color 0.3s ease;
     }
-
-    .load-button:hover {
-      background-color: #666;
-    }
+    .load-button:hover { background-color: #666; }
 
     label {
       display: block;
@@ -50,11 +47,7 @@
       color: #f9f9f9;
       font-size: 17px;
     }
-
-    textarea {
-      height: 80px;
-      resize: vertical;
-    }
+    textarea { height: 80px; resize: vertical; }
 
     .counter {
       font-size: 0.9em;
@@ -71,10 +64,7 @@
       border-radius: 6px;
       cursor: pointer;
     }
-
-    button:hover {
-      background-color: #666;
-    }
+    button:hover { background-color: #666; }
 
     .button-group {
       display: flex;
@@ -90,10 +80,7 @@
       padding: 14px 26px;
       flex-grow: 1;
     }
-
-    .lil-button:hover {
-      background-color: #f17591;
-    }
+    .lil-button:hover { background-color: #f17591; }
 
     .tab-container {
       margin-top: 20px;
@@ -114,35 +101,21 @@
       border-radius: 6px;
       font-size: 16px;
     }
-
-    .tab-button.active {
-      background-color: #e55e7a;
-    }
+    .tab-button.active { background-color: #e55e7a; }
 
     .tab-content {
       display: none;
     }
-
     .tab-content.active {
       display: block;
     }
 
-    .path-block {
+    .path-block, .location-block {
       display: none;
     }
-
-    .path-block.active {
+    .path-block.active, .location-block.active {
       display: block;
     }
- 
-    .location-block {
-      display: none;
-    }
-
-    .location-block.active {
-      display: block;
-    }
-
   </style>
 </head>
 <body>
@@ -164,27 +137,21 @@
       <div class="tab-content active" id="tab1">
         <label>Bot Name:</label>
         <input type="text" id="char_name">
-
         <label>Short Description:</label>
         <textarea id="creator_notes"></textarea>
         <div class="counter" id="combined_counter"></div>
-
         <label>Personality:</label>
         <textarea id="description"></textarea>
         <div class="counter" id="description_counter"></div>
-
         <label>Scenario:</label>
         <textarea id="scenario"></textarea>
         <div class="counter" id="scenario_counter"></div>
-
         <label>Greeting:</label>
         <textarea id="first_mes"></textarea>
         <div class="counter" id="first_mes_counter"></div>
-
         <label>Example Message:</label>
         <textarea id="mes_example"></textarea>
         <div class="counter" id="mes_example_counter"></div>
-
         <label>Tags (one per line):</label>
         <textarea id="tags"></textarea>
       </div>
@@ -192,401 +159,273 @@
       <div class="tab-content" id="tab2">
         <label for="pathSelect">Select Path:</label>
         <select id="pathSelect"></select>
-
         <div id="pathFieldsContainer"></div>
       </div>
 
       <div class="tab-content" id="tab3">
         <label for="locationSelect">Select Location:</label>
         <select id="locationSelect"></select>
-
         <div id="locationFieldsContainer"></div>
       </div>
     </div>
   </form>
 
   <div class="button-group">
-    <button type="button" class="lil-button" onclick="downloadLilJson()">Export LiL JSON</button>
-    <button type="button" onclick="downloadJson()">Download JSON</button>
-    <button type="button" onclick="clearForm()">Clear</button>
+    <button class="lil-button" onclick="downloadLilJson()">Export LiL JSON</button>
+    <button onclick="downloadJson()">Download JSON</button>
+    <button onclick="clearForm()">Clear</button>
   </div>
 
   <script>
-    const textFields = [
-      "char_name", "creator_notes", "description", "scenario", "first_mes", "mes_example", "tags",
-      "path1_description", "path1_scenario", "path1_first_mes"
-    ];
+    // === constants ===
+    const PATH_COUNT = 10;
+    const LOC_COUNT  = 10;
     let avatarBase64 = "";
 
-    function updateCounter(textarea) {
-      const id = textarea.id;
-      const len = textarea.value.length;
-      const tokens = Math.ceil(len / 4);
+    // === counter & combined counter ===
+    function updateCounter(el) {
+      if (!el) return;
+      const id = el.id, len = el.value.length;
       const counter = document.getElementById(id + "_counter");
-      if (counter) counter.innerText = `${len} chars (~${tokens} tokens)`;
+      if (counter) counter.innerText = `${len} chars (~${Math.ceil(len/4)} tokens)`;
       updateCombinedCounter();
     }
-
     function updateCombinedCounter() {
-      const desc = document.getElementById("description").value || "";
-      const scen = document.getElementById("scenario").value || "";
-      const totalTokens = Math.ceil((desc.length + scen.length) / 4);
-      document.getElementById("combined_counter").innerText = `~Tokens of (Personality + Scenario): ${totalTokens}`;
+      const d = document.getElementById("description").value||"";
+      const s = document.getElementById("scenario").value||"";
+      document.getElementById("combined_counter").innerText =
+        `~Tokens of (Personality + Scenario): ${Math.ceil((d.length+s.length)/4)}`;
     }
 
+    // === build & download JSON ===
     function buildJson() {
       return {
-        char_name: document.getElementById('char_name').value.trim(),
-        name: document.getElementById('char_name').value.trim(),
-        personality: document.getElementById('creator_notes').value.trim(),
+        char_name:  document.getElementById('char_name').value.trim(),
+        name:       document.getElementById('char_name').value.trim(),
+        personality:document.getElementById('creator_notes').value.trim(),
         char_intro: document.getElementById('creator_notes').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        scenario: document.getElementById('scenario').value.trim(),
-        first_mes: document.getElementById('first_mes').value.trim(),
-        mes_example: document.getElementById('mes_example').value.trim(),
-        tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
-        avatar: avatarBase64
+        description:document.getElementById('description').value.trim(),
+        scenario:   document.getElementById('scenario').value.trim(),
+        first_mes:  document.getElementById('first_mes').value.trim(),
+        mes_example:document.getElementById('mes_example').value.trim(),
+        tags:       document.getElementById('tags').value.trim().split("\n").filter(Boolean),
+        avatar:     avatarBase64
       };
     }
-
     function buildLiLJson() {
-      return {
-        char_name: document.getElementById('char_name').value.trim(),
-        name: document.getElementById('char_name').value.trim(),
-        creator_notes: document.getElementById('creator_notes').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        scenario: document.getElementById('scenario').value.trim(),
-        first_mes: document.getElementById('first_mes').value.trim(),
-        mes_example: document.getElementById('mes_example').value.trim(),
-        tags: document.getElementById('tags').value.trim().split('\n').filter(Boolean),
-        path1_char_name: document.getElementById('path1_name').value.trim(),
-        path1_creator_notes: document.getElementById('path1_creator_notes').value.trim(),
-        path1_description: document.getElementById('path1_description').value.trim(),
-        path1_scenario: document.getElementById('path1_scenario').value.trim(),
-        path1_first_mes: document.getElementById('path1_first_mes').value.trim(),
-        path2_char_name: document.getElementById('path2_name').value.trim(),
-        path2_creator_notes: document.getElementById('path2_creator_notes').value.trim(),
-        path2_description: document.getElementById('path2_description').value.trim(),
-        path2_scenario: document.getElementById('path2_scenario').value.trim(),
-        path2_first_mes: document.getElementById('path2_first_mes').value.trim(),
-        path3_char_name: document.getElementById('path3_name').value.trim(),
-        path3_creator_notes: document.getElementById('path3_creator_notes').value.trim(),
-        path3_description: document.getElementById('path3_description').value.trim(),
-        path3_scenario: document.getElementById('path3_scenario').value.trim(),
-        path3_first_mes: document.getElementById('path3_first_mes').value.trim(),
-        path4_char_name: document.getElementById('path4_name').value.trim(),
-        path4_creator_notes: document.getElementById('path4_creator_notes').value.trim(),
-        path4_description: document.getElementById('path4_description').value.trim(),
-        path4_scenario: document.getElementById('path4_scenario').value.trim(),
-        path4_first_mes: document.getElementById('path4_first_mes').value.trim(),
-        path5_char_name: document.getElementById('path5_name').value.trim(),
-        path5_creator_notes: document.getElementById('path5_creator_notes').value.trim(),
-        path5_description: document.getElementById('path5_description').value.trim(),
-        path5_scenario: document.getElementById('path5_scenario').value.trim(),
-        path5_first_mes: document.getElementById('path5_first_mes').value.trim(),
-        path6_char_name: document.getElementById('path6_name').value.trim(),
-        path6_creator_notes: document.getElementById('path6_creator_notes').value.trim(),
-        path6_description: document.getElementById('path6_description').value.trim(),
-        path6_scenario: document.getElementById('path6_scenario').value.trim(),
-        path6_first_mes: document.getElementById('path6_first_mes').value.trim(),
-        path7_char_name: document.getElementById('path7_name').value.trim(),
-        path7_creator_notes: document.getElementById('path7_creator_notes').value.trim(),
-        path7_description: document.getElementById('path7_description').value.trim(),
-        path7_scenario: document.getElementById('path7_scenario').value.trim(),
-        path7_first_mes: document.getElementById('path7_first_mes').value.trim(),
-        path8_char_name: document.getElementById('path8_name').value.trim(),
-        path8_creator_notes: document.getElementById('path8_creator_notes').value.trim(),
-        path8_description: document.getElementById('path8_description').value.trim(),
-        path8_scenario: document.getElementById('path8_scenario').value.trim(),
-        path8_first_mes: document.getElementById('path8_first_mes').value.trim(),
-        path9_char_name: document.getElementById('path9_name').value.trim(),
-        path9_creator_notes: document.getElementById('path9_creator_notes').value.trim(),
-        path9_description: document.getElementById('path9_description').value.trim(),
-        path9_scenario: document.getElementById('path9_scenario').value.trim(),
-        path9_first_mes: document.getElementById('path9_first_mes').value.trim(),
-        path10_char_name: document.getElementById('path10_name').value.trim(),
-        path10_creator_notes: document.getElementById('path10_creator_notes').value.trim(),
-        path10_description: document.getElementById('path10_description').value.trim(),
-        path10_scenario: document.getElementById('path10_scenario').value.trim(),
-        path10_first_mes: document.getElementById('path10_first_mes').value.trim(),
-        location1_name: document.getElementById('location1_name').value.trim(),
-        location1_description: document.getElementById('location1_description').value.trim(),
-        location2_name: document.getElementById('location2_name').value.trim(),
-        location2_description: document.getElementById('location2_description').value.trim(),
-        location3_name: document.getElementById('location3_name').value.trim(),
-        location3_description: document.getElementById('location3_description').value.trim(),
-        location4_name: document.getElementById('location4_name').value.trim(),
-        location4_description: document.getElementById('location4_description').value.trim(),
-        location5_name: document.getElementById('location5_name').value.trim(),
-        location5_description: document.getElementById('location5_description').value.trim(),
-        location6_name: document.getElementById('location6_name').value.trim(),
-        location6_description: document.getElementById('location6_description').value.trim(),
-        location7_name: document.getElementById('location7_name').value.trim(),
-        location7_description: document.getElementById('location7_description').value.trim(),
-        location8_name: document.getElementById('location8_name').value.trim(),
-        location8_description: document.getElementById('location8_description').value.trim(),
-        location9_name: document.getElementById('location9_name').value.trim(),
-        location9_description: document.getElementById('location9_description').value.trim(),
-        location10_name: document.getElementById('location10_name').value.trim(),
-        location10_description: document.getElementById('location10_description').value.trim(),
-        nsfw: false,
-        style: 1,
-        gender: 3,
-        avatar: avatarBase64,
-        state: 0
-      };
+      const out = buildJson();
+      for(let i=1;i<=PATH_COUNT;i++){
+        out[`path${i}_char_name`]    = document.getElementById(`path${i}_name`).value.trim();
+        out[`path${i}_creator_notes`] = document.getElementById(`path${i}_creator_notes`).value.trim();
+        out[`path${i}_description`]   = document.getElementById(`path${i}_description`).value.trim();
+        out[`path${i}_scenario`]      = document.getElementById(`path${i}_scenario`).value.trim();
+        out[`path${i}_first_mes`]     = document.getElementById(`path${i}_first_mes`).value.trim();
+      }
+      for(let i=1;i<=LOC_COUNT;i++){
+        out[`location${i}_name`]        = document.getElementById(`location${i}_name`).value.trim();
+        out[`location${i}_description`] = document.getElementById(`location${i}_description`).value.trim();
+      }
+      return out;
     }
-
-    function downloadJson() {
-      const output = buildJson();
-      const blob = new Blob([JSON.stringify(output, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
+    function downloadJson(){
+      const blob = new Blob([JSON.stringify(buildJson(),null,2)],{type:"application/json"});
       const a = document.createElement("a");
-      a.href = url;
-      a.download = `${output.char_name || "bot"}.json`;
+      a.href = URL.createObjectURL(blob);
+      a.download = `${buildJson().char_name||"bot"}.json`;
       a.click();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(a.href);
     }
-
-    function downloadLilJson() {
-      const output = buildLiLJson();
-      const blob = new Blob([JSON.stringify(output, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
+    function downloadLilJson(){
+      const blob = new Blob([JSON.stringify(buildLiLJson(),null,2)],{type:"application/json"});
       const a = document.createElement("a");
-      a.href = url;
-      a.download = `${output.char_name || "bot"}_LiL.json`;
+      a.href = URL.createObjectURL(blob);
+      a.download = `${buildJson().char_name||"bot"}_LiL.json`;
       a.click();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(a.href);
     }
 
-    function clearForm() {
+    // === clear & populate ===
+    function clearForm(){
       document.getElementById('botForm').reset();
-      avatarBase64 = '';
-      textFields.forEach(id => {
+      avatarBase64 = "";
+      allFields.forEach(id=>{
         const el = document.getElementById(id);
-        el.value = '';
-        updateCounter(el);
+        if(el){ el.value=""; updateCounter(el); }
       });
-      document.getElementById('tags').value = '';
       localStorage.removeItem('botFormAutoSave');
     }
-
-    function populateForm(data) {
-      document.getElementById('char_name').value = data.char_name || '';
-      document.getElementById('creator_notes').value = data.creator_notes || data.personality || '';
-      document.getElementById('description').value = data.description || '';
-      document.getElementById('scenario').value = data.scenario || '';
-      document.getElementById('first_mes').value = data.first_mes || '';
-      document.getElementById('mes_example').value = data.mes_example || '';
-      document.getElementById('tags').value = Array.isArray(data.tags) ? data.tags.join('\n') : '';
-      document.getElementById('path1_name').value = data.path1_char_name || '';
-      document.getElementById('path1_creator_notes').value = data.path1_creator_notes || '';
-      document.getElementById('path1_description').value = data.path1_description || '';
-      document.getElementById('path1_scenario').value = data.path1_scenario || '';
-      document.getElementById('path1_first_mes').value = data.path1_first_mes || '';
-      document.getElementById('path2_name').value = data.path2_char_name || '';
-      document.getElementById('path2_creator_notes').value = data.path2_creator_notes || '';
-      document.getElementById('path2_description').value = data.path2_description || '';
-      document.getElementById('path2_scenario').value = data.path2_scenario || '';
-      document.getElementById('path2_first_mes').value = data.path2_first_mes || '';
-      document.getElementById('path3_name').value = data.path3_char_name || '';
-      document.getElementById('path3_creator_notes').value = data.path3_creator_notes || '';
-      document.getElementById('path3_description').value = data.path3_description || '';
-      document.getElementById('path3_scenario').value = data.path3_scenario || '';
-      document.getElementById('path3_first_mes').value = data.path3_first_mes || '';
-      document.getElementById('path4_name').value = data.path4_char_name || '';
-      document.getElementById('path4_creator_notes').value = data.path4_creator_notes || '';
-      document.getElementById('path4_description').value = data.path4_description || '';
-      document.getElementById('path4_scenario').value = data.path4_scenario || '';
-      document.getElementById('path4_first_mes').value = data.path4_first_mes || '';
-      document.getElementById('path5_name').value = data.path5_char_name || '';
-      document.getElementById('path5_creator_notes').value = data.path5_creator_notes || '';
-      document.getElementById('path5_description').value = data.path5_description || '';
-      document.getElementById('path5_scenario').value = data.path5_scenario || '';
-      document.getElementById('path5_first_mes').value = data.path5_first_mes || '';
-      document.getElementById('path6_name').value = data.path6_char_name || '';
-      document.getElementById('path6_creator_notes').value = data.path6_creator_notes || '';
-      document.getElementById('path6_description').value = data.path6_description || '';
-      document.getElementById('path6_scenario').value = data.path6_scenario || '';
-      document.getElementById('path6_first_mes').value = data.path6_first_mes || '';
-      document.getElementById('path7_name').value = data.path7_char_name || '';
-      document.getElementById('path7_creator_notes').value = data.path7_creator_notes || '';
-      document.getElementById('path7_description').value = data.path7_description || '';
-      document.getElementById('path7_scenario').value = data.path7_scenario || '';
-      document.getElementById('path7_first_mes').value = data.path7_first_mes || '';
-      document.getElementById('path8_name').value = data.path8_char_name || '';
-      document.getElementById('path8_creator_notes').value = data.path8_creator_notes || '';
-      document.getElementById('path8_description').value = data.path8_description || '';
-      document.getElementById('path8_scenario').value = data.path8_scenario || '';
-      document.getElementById('path8_first_mes').value = data.path8_first_mes || '';
-      document.getElementById('path9_name').value = data.path9_char_name || '';
-      document.getElementById('path9_creator_notes').value = data.path9_creator_notes || '';
-      document.getElementById('path9_description').value = data.path9_description || '';
-      document.getElementById('path9_scenario').value = data.path9_scenario || '';
-      document.getElementById('path9_first_mes').value = data.path9_first_mes || '';
-      document.getElementById('path10_name').value = data.path10_char_name || '';
-      document.getElementById('path10_creator_notes').value = data.path10_creator_notes || '';
-      document.getElementById('path10_description').value = data.path10_description || '';
-      document.getElementById('path10_scenario').value = data.path10_scenario || '';
-      document.getElementById('path10_first_mes').value = data.path10_first_mes || '';
-      document.getElementById('location1_name').value = data.location1_name || '';
-      document.getElementById('location1_description').value = data.location1_description || '';
-      document.getElementById('location2_name').value = data.location2_name || '';
-      document.getElementById('location2_description').value = data.location2_description || '';
-      document.getElementById('location3_name').value = data.location3_name || '';
-      document.getElementById('location3_description').value = data.location3_description || '';
-      document.getElementById('location4_name').value = data.location4_name || '';
-      document.getElementById('location4_description').value = data.location4_description || '';
-      document.getElementById('location5_name').value = data.location5_name || '';
-      document.getElementById('location5_description').value = data.location5_description || '';
-      document.getElementById('location6_name').value = data.location6_name || '';
-      document.getElementById('location6_description').value = data.location6_description || '';
-      document.getElementById('location7_name').value = data.location7_name || '';
-      document.getElementById('location7_description').value = data.location7_description || '';
-      document.getElementById('location8_name').value = data.location8_name || '';
-      document.getElementById('location8_description').value = data.location8_description || '';
-      document.getElementById('location9_name').value = data.location9_name || '';
-      document.getElementById('location9_description').value = data.location9_description || '';
-      document.getElementById('location10_name').value = data.location10_name || '';
-      document.getElementById('location10_description').value = data.location10_description || '';
-      avatarBase64 = data.avatar || '';
-      updateAllCounters();
+    function populateForm(data){
+      // core
+      document.getElementById('char_name').value = data.char_name||"";
+      document.getElementById('creator_notes').value = data.creator_notes||data.personality||"";
+      document.getElementById('description').value = data.description||"";
+      document.getElementById('scenario').value = data.scenario||"";
+      document.getElementById('first_mes').value = data.first_mes||"";
+      document.getElementById('mes_example').value = data.mes_example||"";
+      document.getElementById('tags').value = Array.isArray(data.tags)?data.tags.join("\n"):"";
+      avatarBase64 = data.avatar||"";
+      // paths & locations
+      for(let i=1;i<=PATH_COUNT;i++){
+        document.getElementById(`path${i}_name`).value            = data[`path${i}_char_name`]    ||"";
+        document.getElementById(`path${i}_creator_notes`).value  = data[`path${i}_creator_notes`]||"";
+        document.getElementById(`path${i}_description`).value    = data[`path${i}_description`]   ||"";
+        document.getElementById(`path${i}_scenario`).value       = data[`path${i}_scenario`]      ||"";
+        document.getElementById(`path${i}_first_mes`).value      = data[`path${i}_first_mes`]     ||"";
+      }
+      for(let i=1;i<=LOC_COUNT;i++){
+        document.getElementById(`location${i}_name`).value        = data[`location${i}_name`]       ||"";
+        document.getElementById(`location${i}_description`).value = data[`location${i}_description` ]||"";
+      }
     }
 
-    function updateAllCounters() {
-      textFields.forEach(id => updateCounter(document.getElementById(id)));
-    }
-
+    // === localStorage ===
     function saveToLocalStorage() {
-      const json = buildJson();
-      localStorage.setItem('botFormAutoSave', JSON.stringify(json));
-    }
+  // grab your entire LiL payload
+  const data = buildLiLJson();
+  localStorage.setItem('botFormAutoSave', JSON.stringify(data));
+}
 
-    function loadFromLocalStorage() {
-      const json = localStorage.getItem('botFormAutoSave');
-      if (!json) return;
-      try {
-        const data = JSON.parse(json);
-        populateForm(data);
-      } catch {}
-    }
+function loadFromLocalStorage() {
+  const j = localStorage.getItem('botFormAutoSave');
+  if (!j) return;
 
-    document.getElementById('fileInput').addEventListener('change', function (event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          populateForm(data);
-          saveToLocalStorage();
-        } catch {
-          alert("Invalid JSON file.");
-        }
-      };
-      reader.readAsText(file);
-    });
+  try {
+    const data = JSON.parse(j);
+    // put the values back into all your inputs & textareas
+    populateForm(data);
+    // refresh your char‐count widgets
+    updateAllCounters();
+    // re‑show the right path & location blocks
+    document.getElementById('pathSelect')?.dispatchEvent(new Event('change'));
+    document.getElementById('locationSelect')?.dispatchEvent(new Event('change'));
+  } catch (err) {
+    console.error('Could not parse autosave:', err);
+  }
+}
 
-    window.onload = () => {
-      textFields.forEach(id => {
-        const el = document.getElementById(id);
-        el.addEventListener('input', () => {
-          updateCounter(el);
-          saveToLocalStorage();
-        });
-        updateCounter(el);
-      });
-      document.querySelectorAll('input, textarea').forEach(el => {
-        el.addEventListener('change', saveToLocalStorage);
-      });
-      loadFromLocalStorage();
-    };
+// wire them onto load/unload
+window.addEventListener('load',  loadFromLocalStorage);
+window.addEventListener('beforeunload', saveToLocalStorage);
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // === global list of all IDs ===
+    let allFields = [];
+
+    // === main setup ===
+    document.addEventListener('DOMContentLoaded',()=>{
+      // 1) build Path blocks
       const pathSelect = document.getElementById('pathSelect');
-      const container = document.getElementById('pathFieldsContainer');
-
-      for (let i = 1; i <= 10; i++) {
+      const pathContainer = document.getElementById('pathFieldsContainer');
+      for(let i=1;i<=PATH_COUNT;i++){
         const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = `Path ${i}`;
+        opt.value = i; opt.textContent = `Path ${i}`;
         pathSelect.appendChild(opt);
-
         const div = document.createElement('div');
-        div.className = 'path-block';
-        div.id = `path-block-${i}`;
+        div.className = 'path-block'; div.id = `path-block-${i}`;
         div.innerHTML = `
           <label>Path Name:</label>
           <input type="text" id="path${i}_name">
-
           <label>Path Short Description:</label>
           <textarea id="path${i}_creator_notes"></textarea>
-
           <label>Path Mini Personality:</label>
           <textarea id="path${i}_description"></textarea>
           <div class="counter" id="path${i}_description_counter"></div>
-
           <label>Path Scenario:</label>
           <textarea id="path${i}_scenario"></textarea>
           <div class="counter" id="path${i}_scenario_counter"></div>
-
           <label>Path Greeting:</label>
           <textarea id="path${i}_first_mes"></textarea>
           <div class="counter" id="path${i}_first_mes_counter"></div>
         `;
-        container.appendChild(div);
+        pathContainer.appendChild(div);
       }
 
-      const locationSelect = document.getElementById('locationSelect');
-      const locationContainer = document.getElementById('locationFieldsContainer');
-
-      for (let i = 1; i <= 10; i++) {
+      // 2) build Location blocks
+      const locSelect = document.getElementById('locationSelect');
+      const locContainer = document.getElementById('locationFieldsContainer');
+      for(let i=1;i<=LOC_COUNT;i++){
         const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = `Location ${i}`;
-        locationSelect.appendChild(opt);
-
+        opt.value = i; opt.textContent = `Location ${i}`;
+        locSelect.appendChild(opt);
         const div = document.createElement('div');
-        div.className = 'location-block';
-        div.id = `location-block-${i}`;
+        div.className = 'location-block'; div.id = `location-block-${i}`;
         div.innerHTML = `
-            <label>Location Name:</label>
-            <input type="text" id="location${i}_name">
-
-            <label>Location Description:</label>
-            <textarea id="location${i}_description"></textarea>
-            <div class="counter" id="location${i}_counter"></div>
+          <label>Location Name:</label>
+          <input type="text" id="location${i}_name">
+          <label>Location Description:</label>
+          <textarea id="location${i}_description"></textarea>
+          <div class="counter" id="location${i}_counter"></div>
         `;
-        locationContainer.appendChild(div);
+        locContainer.appendChild(div);
       }
 
-      pathSelect.addEventListener('change', function () {
-        for (let i = 1; i <= 10; i++) {
-          const block = document.getElementById(`path-block-${i}`);
-          block.classList.remove('active');
-          if (parseInt(this.value) === i) block.classList.add('active');
-        }
+      // 3) collect every text/textarea ID
+      allFields = [
+        "char_name","creator_notes","description","scenario","first_mes","mes_example","tags",
+        ...Array.from({length: PATH_COUNT}, (_,i)=>`path${i+1}_name`),
+        ...Array.from({length: PATH_COUNT}, (_,i)=>`path${i+1}_creator_notes`),
+        ...Array.from({length: PATH_COUNT}, (_,i)=>`path${i+1}_description`),
+        ...Array.from({length: PATH_COUNT}, (_,i)=>`path${i+1}_scenario`),
+        ...Array.from({length: PATH_COUNT}, (_,i)=>`path${i+1}_first_mes`),
+        ...Array.from({length: LOC_COUNT}, (_,i)=>`location${i+1}_name`),
+        ...Array.from({length: LOC_COUNT}, (_,i)=>`location${i+1}_description`)
+      ];
+
+      // 4) restore saved data & populate counters
+      loadFromLocalStorage();
+      allFields.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.addEventListener('input', e => { updateCounter(el); saveToLocalStorage(); });
+        el.addEventListener('change', saveToLocalStorage);
+        updateCounter(el);
       });
 
-      locationSelect.addEventListener('change', function () {
-        for (let i = 1; i <= 10; i++) {
-            const block = document.getElementById(`location-block-${i}`);
-            block.classList.remove('active');
-            if (parseInt(this.value) === i) block.classList.add('active');
-        }
+      // 5) file loader
+      document.getElementById('fileInput').addEventListener('change',ev=>{
+        const f = ev.target.files[0];
+        if(!f) return;
+        const r = new FileReader();
+        r.onload = e=>{
+          try{
+            const data = JSON.parse(e.target.result);
+            populateForm(data);
+            saveToLocalStorage();
+          }catch{ alert("Invalid JSON"); }
+        };
+        r.readAsText(f);
       });
 
-      document.querySelectorAll('.tab-button').forEach(button => {
-        button.addEventListener('click', () => {
-          const tabId = button.getAttribute('data-tab');
-          document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-          button.classList.add('active');
-
-          document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-          document.getElementById(tabId).classList.add('active');
+      // 6) tab switching
+      document.querySelectorAll('.tab-button').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          const t = btn.getAttribute('data-tab');
+          document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+          document.getElementById(t).classList.add('active');
         });
       });
+
+      // 7) path & location selectors
+      pathSelect.addEventListener('change',()=>{
+        for(let i=1;i<=PATH_COUNT;i++){
+          document.getElementById(`path-block-${i}`)
+            .classList.toggle('active', pathSelect.value==i);
+        }
+      });
+      locSelect.addEventListener('change',()=>{
+        for(let i=1;i<=LOC_COUNT;i++){
+          document.getElementById(`location-block-${i}`)
+            .classList.toggle('active', locSelect.value==i);
+        }
+      });
+      // show the first by default
+      pathSelect.value = 1; pathSelect.dispatchEvent(new Event('change'));
+      locSelect.value = 1; locSelect.dispatchEvent(new Event('change'));
     });
+
+    // 8) auto‑save on unload
+    window.addEventListener('beforeunload', saveToLocalStorage);
   </script>
 </body>
 </html>
