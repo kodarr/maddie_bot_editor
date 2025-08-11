@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Bot JSON Editor</title>
   <style>
-    body { font-family: Arial, sans-serif; color: #e0e0e0; background-color: #111827; margin: 20px auto; max-width: 800px; }
+    body { font-family: Arial, sans-serif; color: #e0e0e0; background-color: #111827; margin: 20px auto; max-width: 900px; }
     .top-button-wrapper { text-align: center; margin-bottom: 20px; }
     .load-button { display: inline-block; background-color: #444; color: #fff; padding: 12px 24px; font-size: 16px; border: none; cursor: pointer; border-radius: 6px; width: 100%; text-align: center; transition: background-color 0.3s ease; }
     .load-button:hover { background-color: #666; }
@@ -14,25 +14,51 @@
     .counter { font-size: 0.9em; color: #aaa; text-align: right; }
     button { margin-top: 20px; padding: 10px 20px; background-color: #444; color: white; border: none; border-radius: 6px; cursor: pointer; }
     button:hover { background-color: #666; }
-    .button-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .button-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
     .lil-button { background-color: #e55e7a; font-size: 18px; font-weight: bold; padding: 14px 26px; flex-grow: 1; }
     .lil-button:hover { background-color: #f17591; }
     .tab-container { margin-top: 20px; }
-    .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+    .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
     .tab-button { background-color: #374151; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px; font-size: 16px; }
     .tab-button.active { background-color: #e55e7a; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .path-block, .location-block { display: none; }
     .path-block.active, .location-block.active { display: block; }
-    #description, #first_mes, textarea[id^="path"][id$="_description"], textarea[id^="path"][id$="_first_mes"], textarea[id^="location"][id$="_description"] { height: 270px; }
     .location-image-box { width: 100%; background-color: #2e2e2e; color: #aaa; display: flex; align-items: center; justify-content: center; cursor: default; margin-top: 5px; border: 1px solid #444; font-size: 16px; overflow: hidden; aspect-ratio: 16/9; }
     .location-image-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .bot-top-row { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px; }
     .bot-info-left { flex: 1; }
-    .bot-avatar-right { width: 200px; flex-shrink: 0; }
-    #avatar_image_box { width: 100%; height: 200px; background-color: #2e2e2e; color: #aaa; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444; font-size: 16px; overflow: hidden; }
+    .bot-avatar-right { width: 220px; flex-shrink: 0; }
+    #avatar_image_box { width: 100%; height: 220px; background-color: #2e2e2e; color: #aaa; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444; font-size: 16px; overflow: hidden; }
     #avatar_image_box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    .twrap { position: relative; margin-top: 6px; }
+    .twrap textarea { padding-bottom: 24px; }
+    .twrap .tcounter { position: absolute; right: 8px; bottom: 6px; font-size: 12px; color: #b5b5b5; pointer-events: none; background: rgba(17,24,39,0.6); padding: 1px 6px; border-radius: 4px; }
+
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .spacer { flex: 1; }
+    .qmark{ display:inline-flex; justify-content:center; align-items:center; width:18px; height:18px; margin-left:6px; border-radius:50%; background:#2f3643; color:#d4d7dd; font-weight:bold; cursor:help; font-size:12px; border:1px solid #465065; user-select:none; }
+
+    /* Accordions + chips */
+    .tag-accordion { margin-top: 8px; border: 1px solid #2a2f3a; border-radius: 8px; background: #141b27; }
+    .ac-item + .ac-item { border-top: 1px solid #2a2f3a; }
+    .ac-header { width: 100%; text-align: left; background: #182232; color: #fff; border: none; padding: 10px 12px; cursor: pointer; display:flex; align-items:center; gap:8px; }
+    .ac-header .chev { transform: rotate(-90deg); transition: transform .2s ease; opacity:.8; }
+    .ac-item.open .ac-header .chev { transform: rotate(0deg); }
+    .ac-title { font-weight: 700; font-size: 15px; }
+    .ac-panel { display: none; padding: 10px 12px 12px; }
+    .ac-item.open .ac-panel { display:block; }
+    .chip-grid { display:flex; flex-wrap:wrap; gap:8px; }
+    .tagchip { padding:6px 10px; border:1px solid #444; border-radius:999px; background:#1f2937; color:#f9f9f9; cursor:pointer; font-size:14px; }
+    .tagchip.active { background:#e55e7a; border-color:#e55e7a; }
+
+    .tagbar-header { display:flex; align-items:center; gap:8px; margin-top:12px; }
+    .tiny { font-size: 12px; color: #9aa0a6; }
+    .tag-actions { margin-left:auto; display:flex; gap:8px; }
+    .linky { background:none; border:none; color:#8bb6ff; cursor:pointer; padding:0; font-size:12px; }
+    .linky:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -53,38 +79,72 @@
       <div class="tab-content active" id="tab1">
         <div class="bot-top-row">
           <div class="bot-info-left">
-            <label>Bot Name:</label>
+            <label>Bot Name: <span class="qmark" data-help="char_name">?</span></label>
             <input type="text" id="char_name">
-            <label>Short Description:</label>
-            <textarea id="creator_notes"></textarea>
+            <label>Short Description: <span class="qmark" data-help="creator_notes">?</span></label>
+            <div class="twrap">
+              <textarea id="creator_notes"></textarea>
+              <div class="tcounter" id="creator_notes_counter"></div>
+            </div>
             <div class="counter" id="combined_counter"></div>
           </div>
           <div class="bot-avatar-right">
-            <label>Bot Image:</label>
+            <label>Bot Image: <span class="qmark" data-help="avatar">?</span></label>
             <div class="location-image-box" id="avatar_image_box" onclick="document.getElementById('avatar_image_input').click()">No Image Set</div>
             <input type="file" accept="image/*" id="avatar_image_input" style="display:none">
           </div>
         </div>
-        <label>Personality:</label>
-        <textarea id="description"></textarea><div class="counter" id="description_counter"></div>
-        <label>Scenario:</label>
-        <textarea id="scenario"></textarea><div class="counter" id="scenario_counter"></div>
-        <label>Greeting:</label>
-        <textarea id="first_mes"></textarea><div class="counter" id="first_mes_counter"></div>
-        <label>Example Message:</label>
-        <textarea id="mes_example"></textarea><div class="counter" id="mes_example_counter"></div>
-        <label>Tags (one per line):</label>
+
+        <label>Personality: <span class="qmark" data-help="description">?</span></label>
+        <div class="twrap">
+          <textarea id="description" style="height:270px"></textarea>
+          <div class="tcounter" id="description_counter"></div>
+        </div>
+
+        <label>Scenario: <span class="qmark" data-help="scenario">?</span></label>
+        <div class="twrap">
+          <textarea id="scenario" style="height:270px"></textarea>
+          <div class="tcounter" id="scenario_counter"></div>
+        </div>
+
+        <label>Greeting: <span class="qmark" data-help="first_mes">?</span></label>
+        <div class="twrap">
+          <textarea id="first_mes" style="height:270px"></textarea>
+          <div class="tcounter" id="first_mes_counter"></div>
+        </div>
+
+        <label>Example Message: <span class="qmark" data-help="mes_example">?</span></label>
+        <div class="twrap">
+          <textarea id="mes_example" style="height:270px"></textarea>
+          <div class="tcounter" id="mes_example_counter"></div>
+        </div>
+
+        <div class="tagbar-header">
+          <span>Quick Tag Buttons <span class="qmark" data-help="tags">?</span></span>
+          <span class="tiny">Click to toggle. Selected buttons are exported and won't appear in the text box below.</span>
+          <div class="tag-actions">
+            <!-- <button type="button" id="expandAll" class="linky">Expand all</button> -->
+            <button type="button" id="collapseAll" class="linky">Collapse all</button>
+            <button type="button" id="clearChips" class="linky">Clear buttons</button>
+          </div>
+        </div>
+        <div id="tagAccordion" class="tag-accordion"></div>
+
+        <label>Tags (one per line): <span class="qmark" data-help="tags">?</span></label>
         <textarea id="tags"></textarea>
       </div>
 
       <div class="tab-content" id="tab2">
-        <label for="pathSelect">Select Path:</label>
-        <select id="pathSelect"></select>
+        <div class="row">
+          <label for="pathSelect" style="margin:0">Select Path: <span class="qmark" data-help="pathSelect">?</span></label>
+          <select id="pathSelect"></select>
+          <span class="spacer"></span>
+        </div>
         <div id="pathFieldsContainer"></div>
       </div>
 
       <div class="tab-content" id="tab3">
-        <label for="locationSelect">Select Location:</label>
+        <label for="locationSelect">Select Location: <span class="qmark" data-help="locationSelect">?</span></label>
         <select id="locationSelect"></select>
         <div id="locationFieldsContainer"></div>
       </div>
@@ -100,7 +160,162 @@
   <script>
     const PATH_COUNT = 10, LOC_COUNT = 10;
     let avatarBase64 = "", locationImages = {};
+    let openCategory = localStorage.getItem('tagAccordionOpen') || null;
 
+    // Help text
+    const defaultHelp = {
+      char_name: "This is the name users see on site.",
+      creator_notes: "This is your short description to draw people in to play your bots.",
+      description: "The personality the meat of the bot it dictates how the bot will act.",
+      scenario: "Include key unchanging background details, avoid using {{char}} and {{user}} instead use names for {{char}} and you for {{user}}",
+      first_mes: "This is the greeting to start the story. Best to end in a call to action.",
+      mes_example: "Sample messages should have '{{user}}: message' then below it '{{char}}: response'",
+      tags: "Use the quick tag buttons above to toggle common tags. Selected buttons are exported and do not need to appear in the textarea. Add any custom tags (one per line) in the box below.",
+      avatar: "Bot avatar image. Stored as base64 to keep the JSON portable.",
+      pathSelect: "Each Path is a variant story within the same bot.",
+      locationSelect: "Choose which Location slot to edit. Each has a name, image, and description.",
+      path_name: "This is the name users see on site for the path.",
+      path_creator_notes: "This is your short description to draw people in to play your path.",
+      path_description: "Mini-personality specific to this Path.",
+      path_scenario: "This replaces the default scenario so if you want it the same you must copy it.",
+      path_first_mes: "The new greeting for this path.",
+      location_name: "Name that shows up for the location.",
+      location_image_url: "Direct link to an image. Used if no Base64 image is provided or embedding is disabled.",
+      location_image_file: "Upload an image to store as Base64 (portable, no external hosting needed).",
+      location_description: "This is what feeds into the bot when this location is entered."
+    };
+    function applyHelpTexts(){
+      document.querySelectorAll('.qmark').forEach(el => {
+        const key = el.getAttribute('data-help');
+        if (defaultHelp[key]) el.setAttribute('title', defaultHelp[key]);
+      });
+    }
+
+    // Tag categories
+    const CATEGORY_TAGS = {
+      "Bot Type Tags": ["story driven","sex driven","roleplaying game (rpg)","multiple characters"],
+      "Orientation Tags": ["asexual","bisexual","gay","lesbian","pansexual","straight"],
+      "Technical Tags": ["sends images","trackers","systems","formatting"],
+      "Setting/Story Type Tags": ["action/combat","adventure","alternative universe","anime","another world [isekai]","holiday","horror","creepy","comedy","criminal","cyberpunk","dark romance","historical","love triangle","modern","mystery","myths and legends","noire","omegaverse","romance","secrets","slice of life"],
+      "NPC Tags": ["thief","alpha","beta","boyfriend","brat","brother","bullied","bully","cannon character","cheerleader","childhood friend","friend","daughter","detective","dilf","doctor","dominant","ex-boyfriend","ex-girlfriend","femboy","gang member","girlfriend","hero","husband","king","mafia member","maid","masochist","master","milf","mistress","musician","neighbor","nurse","omega","original character","personal trainer","pet","pokémon trainer","roommate","stranger","royalty","sadist","sister","slave","son","step parent","step sibling","student","submissive","switch","teacher","tomboy","tsundere","villain","wife","yandere"],
+      "Species Tags": ["alien","android","anthro/furry","cyborgs","demi-human","demon","divine [divinity]","dragon","dwarf","elf","ghost","goblin","human","monster boy","monster girl","non-human","orc","pokémon","robots","vampire","werewolf"]
+    };
+    Object.keys(CATEGORY_TAGS).forEach(cat=>{
+      CATEGORY_TAGS[cat] = [...CATEGORY_TAGS[cat]].sort((a,b)=>a.localeCompare(b, undefined, {sensitivity:'base'}));
+    });
+    const PRESET_MAP = {};
+    Object.values(CATEGORY_TAGS).flat().forEach(t => PRESET_MAP[t.toLowerCase()] = t);
+    let selectedPreset = new Set();
+
+    function parseTagsTextarea(){
+      return document.getElementById('tags').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    }
+    function dedupeCaseInsensitive(arr){
+      const seen = new Set(); const out = [];
+      for (const t of arr){ const k = t.toLowerCase(); if (!seen.has(k)){ seen.add(k); out.push(t); } }
+      return out;
+    }
+
+    function renderAccordions(){
+      const host = document.getElementById('tagAccordion');
+      if (!host) return;
+      host.innerHTML = '';
+
+      const titles = Object.keys(CATEGORY_TAGS);
+      if (!openCategory) openCategory = titles[0];
+
+      Object.entries(CATEGORY_TAGS).forEach(([title, tags])=>{
+        const item = document.createElement('div');
+        const isOpen = title === openCategory;
+        item.className = 'ac-item' + (isOpen ? ' open' : '');
+
+        const header = document.createElement('button');
+        header.type = 'button';
+        header.className = 'ac-header';
+        header.innerHTML = `<span class="chev">▸</span><span class="ac-title">${title}</span>`;
+        header.addEventListener('click', ()=>{
+          // Single-open: open this, close others
+          openCategory = title;
+          localStorage.setItem('tagAccordionOpen', openCategory);
+          host.querySelectorAll('.ac-item').forEach(it=>it.classList.remove('open'));
+          item.classList.add('open');
+        });
+
+        const panel = document.createElement('div');
+        panel.className = 'ac-panel';
+        const grid = document.createElement('div');
+        grid.className = 'chip-grid';
+
+        tags.forEach(tag => {
+          const key = tag.toLowerCase();
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'tagchip' + (selectedPreset.has(key) ? ' active' : '');
+          btn.textContent = tag;
+          btn.addEventListener('click', ()=>{
+            if (selectedPreset.has(key)) selectedPreset.delete(key); else selectedPreset.add(key);
+            btn.classList.toggle('active');
+            syncTagTextareaFromState();
+            saveToLocalStorage();
+            // keep this section open
+            openCategory = title;
+            localStorage.setItem('tagAccordionOpen', openCategory);
+          });
+          grid.appendChild(btn);
+        });
+
+        panel.appendChild(grid);
+        item.appendChild(header);
+        item.appendChild(panel);
+        host.appendChild(item);
+      });
+
+      // Actions for single-open behavior
+      const expandAll = document.getElementById('expandAll');
+      const collapseAll = document.getElementById('collapseAll');
+      const clearChips = document.getElementById('clearChips');
+
+      if (expandAll) expandAll.onclick = ()=>{
+        openCategory = titles[0];
+        localStorage.setItem('tagAccordionOpen', openCategory);
+        host.querySelectorAll('.ac-item').forEach((it,i)=>it.classList.toggle('open', i===0));
+      };
+      if (collapseAll) collapseAll.onclick = ()=>{
+        openCategory = null;
+        localStorage.removeItem('tagAccordionOpen');
+        host.querySelectorAll('.ac-item').forEach(it=>it.classList.remove('open'));
+      };
+      if (clearChips) clearChips.onclick = ()=>{
+        selectedPreset.clear();
+        syncTagTextareaFromState();
+        saveToLocalStorage();
+      };
+    }
+
+    function syncTagTextareaFromState(){
+      const textarea = document.getElementById('tags');
+      if (!textarea) return;
+      const currentCustom = parseTagsTextarea().filter(t => !(t.toLowerCase() in PRESET_MAP));
+      textarea.value = dedupeCaseInsensitive(currentCustom).join('\n');
+      if (typeof updateCounter === 'function') updateCounter(textarea);
+      renderAccordions(); // re-render chips, keep openCategory
+    }
+
+    function syncStateFromTextarea(){
+      const lines = parseTagsTextarea().map(t=>t.toLowerCase());
+      selectedPreset = new Set(lines.filter(k => k in PRESET_MAP));
+      renderAccordions();
+      const customs = lines.filter(k => !(k in PRESET_MAP));
+      document.getElementById('tags').value = customs.join('\n');
+    }
+
+    function applyPresetTagsFromTextarea(initial=false){
+      syncStateFromTextarea();
+      syncTagTextareaFromState();
+      if (!initial) saveToLocalStorage();
+    }
+
+    // ===== App init, save/load, etc. =====
     document.addEventListener('DOMContentLoaded', () => {
       // Build Paths
       const pathSelect = document.getElementById('pathSelect'), pathContainer = document.getElementById('pathFieldsContainer');
@@ -108,11 +323,27 @@
         pathSelect.append(new Option(`Path ${i}`, i));
         const div = document.createElement('div'); div.className = 'path-block'; div.id = `path-block-${i}`;
         div.innerHTML = `
-          <label>Path Name:</label><input type="text" id="path${i}_name">
-          <label>Short Description:</label><textarea id="path${i}_creator_notes"></textarea>
-          <label>Mini Personality:</label><textarea id="path${i}_description"></textarea><div class="counter" id="path${i}_description_counter"></div>
-          <label>Scenario:</label><textarea id="path${i}_scenario"></textarea><div class="counter" id="path${i}_scenario_counter"></div>
-          <label>Greeting:</label><textarea id="path${i}_first_mes"></textarea><div class="counter" id="path${i}_first_mes_counter"></div>
+          <label>Path Name: <span class="qmark" data-help="path_name">?</span></label><input type="text" id="path${i}_name">
+          <label>Short Description: <span class="qmark" data-help="path_creator_notes">?</span></label>
+          <div class="twrap">
+            <textarea id="path${i}_creator_notes"></textarea>
+            <div class="tcounter" id="path${i}_creator_notes_counter"></div>
+          </div>
+          <label>Mini Personality: <span class="qmark" data-help="path_description">?</span></label>
+          <div class="twrap">
+            <textarea id="path${i}_description" style="height:270px"></textarea>
+            <div class="tcounter" id="path${i}_description_counter"></div>
+          </div>
+          <label>Scenario: <span class="qmark" data-help="path_scenario">?</span></label>
+          <div class="twrap">
+            <textarea id="path${i}_scenario" style="height:270px"></textarea>
+            <div class="tcounter" id="path${i}_scenario_counter"></div>
+          </div>
+          <label>Greeting: <span class="qmark" data-help="path_first_mes">?</span></label>
+          <div class="twrap">
+            <textarea id="path${i}_first_mes" style="height:270px"></textarea>
+            <div class="tcounter" id="path${i}_first_mes_counter"></div>
+          </div>
         `;
         pathContainer.append(div);
       }
@@ -129,10 +360,14 @@
         locSelect.append(new Option(`Location ${i}`, i));
         const div = document.createElement('div'); div.className = 'location-block'; div.id = `location-block-${i}`;
         div.innerHTML = `
-          <label>Location Name:</label><input type="text" id="location${i}_name">
-          <label>Image URL:</label><input type="text" id="location${i}_image_url" placeholder="https://example.com/image.jpg">
+          <label>Location Name: <span class="qmark" data-help="location_name">?</span></label><input type="text" id="location${i}_name">
+          <label>Image URL: <span class="qmark" data-help="location_image_url">?</span></label><input type="text" id="location${i}_image_url" placeholder="https://example.com/image.jpg">
           <div class="location-image-box" id="location${i}_image_box">No Image Set</div>
-          <label>Location Description:</label><textarea id="location${i}_description"></textarea><div class="counter" id="location${i}_description_counter"></div>
+          <label>Location Description: <span class="qmark" data-help="location_description">?</span></label>
+          <div class="twrap">
+            <textarea id="location${i}_description" style="height:270px"></textarea>
+            <div class="tcounter" id="location${i}_description_counter"></div>
+          </div>
         `;
         locContainer.append(div);
       }
@@ -143,10 +378,10 @@
       });
       locSelect.value = 1; locSelect.dispatchEvent(new Event('change'));
 
-      // Load saved data
+      // Load autosave
       loadFromLocalStorage();
 
-      // Autosave inputs
+      // Autosave + token counters
       document.querySelectorAll('input[type="text"],textarea,select').forEach(el => {
         el.addEventListener('input', () => { updateCounter(el); saveToLocalStorage(); });
         el.addEventListener('change', saveToLocalStorage);
@@ -163,7 +398,7 @@
         reader.readAsDataURL(file);
       });
 
-      // Location URL -> preview
+      // Location URL preview
       document.querySelectorAll('input[id$="_image_url"]').forEach(el => {
         el.addEventListener('input', () => {
           const idx = el.id.match(/^location(\d+)_image_url$/)[1];
@@ -176,7 +411,7 @@
         });
       });
 
-      // Tab switching
+      // Tabs
       document.querySelectorAll('.tab-button').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
@@ -185,33 +420,182 @@
           document.getElementById(btn.dataset.tab).classList.add('active');
         });
       });
+
+      // Init counters, tooltips, chips
+      document.querySelectorAll('textarea').forEach(updateCounter);
+      applyHelpTexts();
+      renderAccordions();
+
+      // If there's no autosave, infer chips from textarea once; else keep restored chips
+      const hasAutosave = !!localStorage.getItem('botFormAutoSave');
+      if (!hasAutosave) applyPresetTagsFromTextarea(true);
+      else syncTagTextareaFromState();
+
+      // Keep chips in sync while typing
+      const tagsArea = document.getElementById('tags');
+      if (tagsArea){
+        tagsArea.addEventListener('input', ()=>{
+          syncStateFromTextarea();
+          syncTagTextareaFromState();
+          saveToLocalStorage();
+        });
+      }
     });
 
     // Save/load
-    function saveToLocalStorage() { try { localStorage.setItem('botFormAutoSave', JSON.stringify(buildLiLJson())); } catch(e) { console.warn(e); } }
-    function loadFromLocalStorage() { const raw = localStorage.getItem('botFormAutoSave'); if (!raw) return; try { const data = JSON.parse(raw); populateForm(data); document.querySelectorAll('input[type="text"],textarea').forEach(updateCounter); } catch(e) {} }
+    function saveToLocalStorage() {
+      try {
+        const obj = buildLiLJson();
+        obj._chip_state = Array.from(selectedPreset);
+        obj._open_category = openCategory || null;
+        localStorage.setItem('botFormAutoSave', JSON.stringify(obj));
+      } catch(e) { console.warn(e); }
+    }
+    function loadFromLocalStorage() {
+      const raw = localStorage.getItem('botFormAutoSave'); if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        if (Array.isArray(data._chip_state)) {
+          selectedPreset = new Set(
+            data._chip_state.map(k=>String(k).toLowerCase()).filter(k=>k in PRESET_MAP)
+          );
+        }
+        if (data._open_category && CATEGORY_TAGS[data._open_category]) {
+          openCategory = data._open_category;
+          localStorage.setItem('tagAccordionOpen', openCategory);
+        }
+        populateForm(data);
+        document.querySelectorAll('textarea').forEach(updateCounter);
+        renderAccordions();
+        if (Array.isArray(data._chip_state)) {
+          syncTagTextareaFromState();
+        } else {
+          applyPresetTagsFromTextarea(true);
+        }
+      } catch(e) { console.warn(e); }
+    }
 
-    // JSON builders
-    function buildJson() { return { char_name: document.getElementById('char_name').value.trim(), name: document.getElementById('char_name').value.trim(), personality: document.getElementById('creator_notes').value.trim(), char_intro: document.getElementById('creator_notes').value.trim(), description: document.getElementById('description').value.trim(), scenario:document.getElementById('scenario').value.trim(), first_mes:document.getElementById('first_mes').value.trim(), mes_example:document.getElementById('mes_example').value.trim(), tags:document.getElementById('tags').value.trim().split("\n").filter(Boolean), avatar:avatarBase64 }; }
-    function buildLiLJson() { const out = buildJson(); for (let i=1;i<=PATH_COUNT;i++){ out[`path${i}_char_name`]=document.getElementById(`path${i}_name`).value.trim(); out[`path${i}_creator_notes`]=document.getElementById(`path${i}_creator_notes`).value.trim(); out[`path${i}_description`]=document.getElementById(`path${i}_description`).value.trim(); out[`path${i}_scenario`]=document.getElementById(`path${i}_scenario`).value.trim(); out[`path${i}_first_mes`]=document.getElementById(`path${i}_first_mes`).value.trim(); } for (let i=1;i<=LOC_COUNT;i++){ out[`location${i}_name`]=document.getElementById(`location${i}_name`).value.trim(); out[`location${i}_image`]=locationImages[`location${i}`]||""; out[`location${i}_description`]=document.getElementById(`location${i}_description`).value.trim(); } return out; }
+    // Tokens (rough)
+    function estimateTokens(text){
+      if (!text) return 0;
+      const len = text.length;
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
+      return Math.max(Math.ceil(len/4), Math.ceil(words*0.75));
+    }
 
-    // Populate
-    function populateForm(data){ document.getElementById('char_name').value=data.char_name||""; document.getElementById('creator_notes').value=data.personality||""; avatarBase64=data.avatar||""; document.getElementById('avatar_image_box').innerHTML=avatarBase64?`<img src="${avatarBase64}">`:'No Image Set'; document.getElementById('description').value=data.description||""; document.getElementById('scenario').value=data.scenario||""; document.getElementById('first_mes').value=data.first_mes||""; document.getElementById('mes_example').value=data.mes_example||""; document.getElementById('tags').value=(data.tags||[]).join("\n"); for (let i=1;i<=PATH_COUNT;i++){ document.getElementById(`path${i}_name`).value=data[`path${i}_char_name`]||""; document.getElementById(`path${i}_creator_notes`).value=data[`path${i}_creator_notes`]||""; document.getElementById(`path${i}_description`).value=data[`path${i}_description`]||""; document.getElementById(`path${i}_scenario`).value=data[`path${i}_scenario`]||""; document.getElementById(`path${i}_first_mes`).value=data[`path${i}_first_mes`]||""; } for (let i=1;i<=LOC_COUNT;i++){ document.getElementById(`location${i}_name`).value=data[`location${i}_name`]||""; document.getElementById(`location${i}_image_url`).value=data[`location${i}_image`]||""; const url=data[`location${i}_image`]; const box=document.getElementById(`location${i}_image_box`); if(url) box.innerHTML=`<img src="${url}" onerror="this.parentNode.innerText='Invalid URL';">`; else box.innerText='No Image Set'; document.getElementById(`location${i}_description`).value=data[`location${i}_description`]||""; locationImages[`location${i}`]=data[`location${i}_image`]||""; } }
+    // Build JSON
+    function buildJson() {
+      const textareaTags = document.getElementById('tags').value.trim().split("\n").filter(Boolean);
+      const presetList = Array.from(selectedPreset).map(k => PRESET_MAP[k]);
+      const all = dedupeCaseInsensitive([...presetList, ...textareaTags]);
+      return {
+        char_name: document.getElementById('char_name').value.trim(),
+        name: document.getElementById('char_name').value.trim(),
+        personality: document.getElementById('creator_notes').value.trim(),
+        char_intro: document.getElementById('creator_notes').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        scenario: document.getElementById('scenario').value.trim(),
+        first_mes: document.getElementById('first_mes').value.trim(),
+        mes_example: document.getElementById('mes_example').value.trim(),
+        tags: all,
+        avatar: avatarBase64
+      };
+    }
+    function buildLiLJson() {
+      const out = buildJson();
+      for (let i=1;i<=PATH_COUNT;i++){
+        out[`path${i}_char_name`] = document.getElementById(`path${i}_name`).value.trim();
+        out[`path${i}_creator_notes`] = document.getElementById(`path${i}_creator_notes`).value.trim();
+        out[`path${i}_description`] = document.getElementById(`path${i}_description`).value.trim();
+        out[`path${i}_scenario`] = document.getElementById(`path${i}_scenario`).value.trim();
+        out[`path${i}_first_mes`] = document.getElementById(`path${i}_first_mes`).value.trim();
+      }
+      for (let i=1;i<=LOC_COUNT;i++){
+        out[`location${i}_name`] = document.getElementById(`location${i}_name`).value.trim();
+        out[`location${i}_image`] = locationImages[`location${i}`]||"";
+        out[`location${i}_description`] = document.getElementById(`location${i}_description`).value.trim();
+      }
+      return out;
+    }
+
+    // Populate form
+    function populateForm(data){
+      document.getElementById('char_name').value = data.char_name||"";
+      document.getElementById('creator_notes').value = data.personality||"";
+      avatarBase64 = data.avatar||"";
+      document.getElementById('avatar_image_box').innerHTML = avatarBase64?`<img src="${avatarBase64}">`:'No Image Set';
+      document.getElementById('description').value = data.description||"";
+      document.getElementById('scenario').value = data.scenario||"";
+      document.getElementById('first_mes').value = data.first_mes||"";
+      document.getElementById('mes_example').value = data.mes_example||"";
+      document.getElementById('tags').value = (data.tags||[]).join("\n");
+
+      for (let i=1;i<=PATH_COUNT;i++){
+        document.getElementById(`path${i}_name`).value = data[`path${i}_char_name`]||"";
+        document.getElementById(`path${i}_creator_notes`).value = data[`path${i}_creator_notes`]||"";
+        document.getElementById(`path${i}_description`).value = data[`path${i}_description`]||"";
+        document.getElementById(`path${i}_scenario`).value = data[`path${i}_scenario`]||"";
+        document.getElementById(`path${i}_first_mes`).value = data[`path${i}_first_mes`]||"";
+      }
+      for (let i=1;i<=LOC_COUNT;i++){
+        document.getElementById(`location${i}_name`).value = data[`location${i}_name`]||"";
+        document.getElementById(`location${i}_image_url`).value = data[`location${i}_image`]||"";
+        const url = data[`location${i}_image`];
+        const box = document.getElementById(`location${i}_image_box`);
+        if (url) box.innerHTML = `<img src="${url}" onerror="this.parentNode.innerText='Invalid URL';">`;
+        else box.innerText = 'No Image Set';
+        document.getElementById(`location${i}_description`).value = data[`location${i}_description`]||"";
+        locationImages[`location${i}`] = data[`location${i}_image`]||"";
+      }
+    }
 
     // Counters
-    function updateCounter(el){ const c=document.getElementById(el.id+"_counter"); if(c) c.innerText=`${el.value.length} chars (~${Math.ceil(el.value.length/4)} tokens)`; const d=document.getElementById('description').value, s=document.getElementById('scenario').value; document.getElementById('combined_counter').innerText=`~Tokens of (Personality + Scenario): ${Math.ceil((d.length+s.length)/4)}`; }
+    function updateCounter(el){
+      const c=document.getElementById(el.id+"_counter");
+      if(c) c.innerText=`${el.value.length} chars • ~${estimateTokens(el.value)} tokens`;
+      const d=document.getElementById('description').value, s=document.getElementById('scenario').value;
+      const combined=document.getElementById('combined_counter');
+      if (combined) combined.innerText=`~Tokens of (Personality + Scenario): ${estimateTokens(d)+estimateTokens(s)}`;
+    }
 
-    // Downloads
-    function downloadJson(){ const blob=new Blob([JSON.stringify(buildJson(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${buildJson().char_name||'bot'}.json`; a.click(); }
-    function downloadLilJson(){ const blob=new Blob([JSON.stringify(buildLiLJson(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${buildJson().char_name||'bot'}_LiL.json`; a.click(); }
+    // Exports
+    function downloadJson(){ const obj=buildJson(); obj.exported_at=new Date().toISOString(); const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${obj.char_name||'bot'}.json`; a.click(); }
+    function downloadLilJson(){ const core=buildJson(); const obj=buildLiLJson(); obj.exported_at=new Date().toISOString(); if(!obj.char_name) obj.char_name=core.char_name||core.name||""; const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${core.char_name||'bot'}_LiL.json`; a.click(); }
 
     // Clear
-    function clearForm(){ document.getElementById('botForm').reset(); avatarBase64=""; document.getElementById('avatar_image_box').innerText='No Image Set'; locationImages={}; for(let i=1;i<=LOC_COUNT;i++) document.getElementById(`location${i}_image_box`).innerText='No Image Set'; localStorage.removeItem('botFormAutoSave'); document.getElementById('pathSelect').value=1; document.getElementById('pathSelect').dispatchEvent(new Event('change')); document.getElementById('locationSelect').value=1; document.getElementById('locationSelect').dispatchEvent(new Event('change')); document.querySelectorAll('.counter').forEach(c=>c.innerText=''); document.getElementById('combined_counter').innerText=''; }
+    function clearForm(){
+      document.getElementById('botForm').reset();
+      avatarBase64="";
+      document.getElementById('avatar_image_box').innerText='No Image Set';
+      locationImages={};
+      for(let i=1;i<=LOC_COUNT;i++) document.getElementById(`location${i}_image_box`).innerText='No Image Set';
+      localStorage.removeItem('botFormAutoSave');
+      document.querySelectorAll('.tcounter').forEach(c=>c.innerText='');
+      document.getElementById('combined_counter').innerText='';
+      selectedPreset.clear();
+      renderAccordions();
+    }
 
     // Load from file
-    document.getElementById('fileInput').addEventListener('change',ev=>{ const f=ev.target.files[0]; if(!f) return; const reader=new FileReader(); reader.onload=e=>{ try{ populateForm(JSON.parse(e.target.result)); saveToLocalStorage(); }catch{alert('Invalid JSON');}}; reader.readAsText(f);} );
+    document.getElementById('fileInput').addEventListener('change',ev=>{
+      const f=ev.target.files[0]; if(!f) return;
+      const reader=new FileReader();
+      reader.onload=e=>{
+        try{
+          const obj = JSON.parse(e.target.result);
+          selectedPreset.clear();
+          populateForm(obj);
+          document.querySelectorAll('textarea').forEach(updateCounter);
+          renderAccordions();
+          applyPresetTagsFromTextarea();
+          saveToLocalStorage();
+        }catch{alert('Invalid JSON');}
+      };
+      reader.readAsText(f);
+    });
 
-    // Auto-save on unload
+    // Tooltips
+    document.addEventListener('DOMContentLoaded', applyHelpTexts);
     window.addEventListener('beforeunload',saveToLocalStorage);
   </script>
 </body>
