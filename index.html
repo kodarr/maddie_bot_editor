@@ -207,8 +207,11 @@
     Object.values(CATEGORY_TAGS).flat().forEach(t => PRESET_MAP[t.toLowerCase()] = t);
     let selectedPreset = new Set();
 
-    function parseTagsTextarea(){
-      return document.getElementById('tags').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    // --- changed: keepBlanks support ---
+    function parseTagsTextarea(keepBlanks = false){
+      const raw = document.getElementById('tags').value.split('\n');
+      const trimmed = raw.map(s => s.trim());
+      return keepBlanks ? trimmed : trimmed.filter(Boolean);
     }
     function dedupeCaseInsensitive(arr){
       const seen = new Set(); const out = [];
@@ -301,16 +304,30 @@
       renderAccordions(); // re-render chips, keep openCategory
     }
 
-    function syncStateFromTextarea(){
-      const lines = parseTagsTextarea().map(t=>t.toLowerCase());
-      selectedPreset = new Set(lines.filter(k => k in PRESET_MAP));
+    // --- changed: merge-aware & optional textarea cleanup ---
+    // opts: { merge: true|false, touchTextarea: true|false, keepBlanks: true|false }
+    function syncStateFromTextarea(opts = { merge: true, touchTextarea: false, keepBlanks: true }){
+      const lines = parseTagsTextarea(!!opts.keepBlanks).map(t=>t.toLowerCase());
+      const presetInText = lines.filter(k => k in PRESET_MAP);
+
+      if (opts.merge) {
+        presetInText.forEach(k => selectedPreset.add(k));
+      } else {
+        selectedPreset = new Set(presetInText);
+      }
+
+      if (opts.touchTextarea) {
+        const customs = lines.filter(k => !(k in PRESET_MAP));
+        const ta = document.getElementById('tags');
+        if (ta) ta.value = customs.join('\n');
+      }
+
       renderAccordions();
-      const customs = lines.filter(k => !(k in PRESET_MAP));
-      document.getElementById('tags').value = customs.join('\n');
     }
 
     function applyPresetTagsFromTextarea(initial=false){
-      syncStateFromTextarea();
+      // Overwrite + clean when importing/applying explicitly
+      syncStateFromTextarea({ merge: false, touchTextarea: true, keepBlanks: false });
       syncTagTextareaFromState();
       if (!initial) saveToLocalStorage();
     }
@@ -431,11 +448,18 @@
       if (!hasAutosave) applyPresetTagsFromTextarea(true);
       else syncTagTextareaFromState();
 
-      // Keep chips in sync while typing
+      // Keep chips in sync while typing WITHOUT rewriting textarea (preserves Enter/newlines & caret)
       const tagsArea = document.getElementById('tags');
       if (tagsArea){
         tagsArea.addEventListener('input', ()=>{
-          syncStateFromTextarea();
+          // Merge any present presets; do not touch the textarea while typing
+          syncStateFromTextarea({ merge: true, touchTextarea: false, keepBlanks: true });
+          saveToLocalStorage();
+        });
+
+        // On leaving the field: clean (strip presets), keep only customs
+        tagsArea.addEventListener('blur', ()=>{
+          syncStateFromTextarea({ merge: true, touchTextarea: true, keepBlanks: false });
           syncTagTextareaFromState();
           saveToLocalStorage();
         });
@@ -587,6 +611,7 @@
           populateForm(obj);
           document.querySelectorAll('textarea').forEach(updateCounter);
           renderAccordions();
+          // Overwrite chips from textarea (file's tags) and clean textarea
           applyPresetTagsFromTextarea();
           saveToLocalStorage();
         }catch{alert('Invalid JSON');}
